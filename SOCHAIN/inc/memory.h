@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 /* ATENÇÃO: NÃO MODIFICAR ESTE FICHEIRO
  * Os ficheiros .h serão substituídos pelos fornecidos pelos professores durante a avaliação
  * Caso estes ficheiros sejam modificados, o trabalho deixará de compilar durante a avaliação
@@ -58,7 +60,6 @@ struct buffers {
  * apontador para a mesma.
  */
 void* allocate_dynamic_memory(int size);
-
 
 /* Função que reserva uma zona de memória partilhada com tamanho indicado
  * por size e nome name, preenche essa zona de memória com o valor 0, e 

@@ -1,7 +1,8 @@
+INC_DIR = inc
 SRC_DIR = src
 OBJ_DIR = obj
 OBJ_FILES = $(OBJ_DIR)/main.o $(OBJ_DIR)/memory.o $(OBJ_DIR)/process.o $(OBJ_DIR)/server.o $(OBJ_DIR)/wallet.o
-FLAGS = -Wall -Wextra -Werror
+FLAGS = -Wall -Wextra -Werror -I$(INC_DIR)
 CC = gcc
 PROGRAM_NAME = Main
 OUTPUT_DIR = bin
@@ -9,8 +10,8 @@ OUTPUT_DIR = bin
 all:
 	make $(PROGRAM_NAME)
 
-%.o: $(SRC_DIR)/%.c
-	$(CC) $(FLAGS) -o $(OBJ_DIR)/$@ -c $^
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	$(CC) $(FLAGS) -o $@ -c $^
 
 $(PROGRAM_NAME): $(OBJ_FILES)
 	$(CC) $(OBJ_FILES) -o $(OUTPUT_DIR)/$(PROGRAM_NAME) 
@@ -25,3 +26,5 @@ fclean:
 re:
 	make fclean
 	make all
+
+.phony: all clean fclean re
