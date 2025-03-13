@@ -7,24 +7,23 @@ CC = gcc
 PROGRAM_NAME = Main
 OUTPUT_DIR = bin
 
-all:
-	make $(PROGRAM_NAME)
+all: $(PROGRAM_NAME)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) $(FLAGS) -o $@ -c $^
+$(OBJ_DIR):
+    mkdir -p $(OBJ_DIR)
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+    $(CC) $(FLAGS) -o $@ -c $^
 
 $(PROGRAM_NAME): $(OBJ_FILES)
-	$(CC) $(OBJ_FILES) -o $(OUTPUT_DIR)/$(PROGRAM_NAME) 
+    $(CC) $(OBJ_FILES) -o $(OUTPUT_DIR)/$(PROGRAM_NAME)
 
 clean:
-	rm $(OBJ_DIR)/*.o
+    rm -f $(OBJ_DIR)/*.o
 
-fclean:
-	make clean
-	rm $(OUTPUT_DIR)/$(PROGRAM_NAME)
-	
-re:
-	make fclean
-	make all
+fclean: clean
+    rm -f $(OUTPUT_DIR)/$(PROGRAM_NAME)
 
-.phony: all clean fclean re
+re: fclean all
+
+.PHONY: all clean fclean re
