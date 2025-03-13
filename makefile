@@ -1,12 +1,14 @@
 .RECIPEPREFIX = >
 
+OBJ_FILES = main.o memory.o process.o server.o wallet.o
+OBJ_PATHS = $(addprefix $(OBJ_DIR)/,$(OBJ_FILES))
 INC_DIR = inc
 SRC_DIR = src
 OBJ_DIR = obj
-OBJ_FILES = $(OBJ_DIR)/main.o $(OBJ_DIR)/memory.o $(OBJ_DIR)/process.o $(OBJ_DIR)/server.o $(OBJ_DIR)/wallet.o
 FLAGS = -Wall -Wextra -I$(INC_DIR)
+LIBS = -lm
 CC = gcc
-PROGRAM_NAME = Main
+PROGRAM_NAME = main
 OUTPUT_DIR = bin
 
 all: $(PROGRAM_NAME)
@@ -15,20 +17,18 @@ $(OBJ_DIR):
 >   mkdir -p $(OBJ_DIR)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
->   $(CC) $(FLAGS) -o $@ -c $^
+>   $(CC) $(FLAGS) $(LIBS) -o $@ -c $^
 
-$(PROGRAM_NAME): $(OBJ_FILES)
->   $(CC) $(OBJ_FILES) -o $(OUTPUT_DIR)/$(PROGRAM_NAME)
+$(PROGRAM_NAME): $(OBJ_PATHS)
+>   $(CC) $(OBJ_PATHS) -o $(OUTPUT_DIR)/$(PROGRAM_NAME)
 
 clean:
 >   rm -f $(OBJ_DIR)/*.o
-
-fclean: clean
 >   rm -f $(OUTPUT_DIR)/$(PROGRAM_NAME)
 
-re: fclean all
+re: clean all
 
 run: all
 > 	./$(OUTPUT_DIR)/$(PROGRAM_NAME)
 
-.PHONY: all clean fclean re run
+.PHONY: all clean re run
