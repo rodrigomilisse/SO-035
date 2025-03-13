@@ -1,5 +1,7 @@
 #include "memory.h"
 #include "main.h"
+
+#include<stdio.h>
 //Estrutura que agrega a informação necessária pela main do hOSpital.
 
 /*
@@ -157,5 +159,6 @@ void help()
  */
 int main(int argc, char *argv[])
 {
+	printf("Hello World!\n");
 	return 0;
 }
