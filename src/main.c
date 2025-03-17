@@ -10,6 +10,17 @@
  */
 void main_args(int argc, char *argv[], struct info_container *info)
 {
+	sscanf(argv[0], "%f", &info->init_balance);
+	sscanf(argv[1], "%d", &info->n_wallets);
+	sscanf(argv[2], "%d", &info->n_servers);
+	sscanf(argv[3], "%d", &info->buffers_size);
+	sscanf(argv[4], "%d", &info->max_txs);
+
+	printf("initial balance:  %0.2f\n", info->init_balance);
+	printf("wallet count: ... %d\n", info->n_wallets);
+	printf("server count: ... %d\n", info->n_servers);
+	printf("buffers size: ... %d\n", info->buffers_size);
+	printf("max transactions: %d\n", info->max_txs);
 }
 
 /* Função que reserva a memória dinâmica necessária, por exemplo,
@@ -125,6 +136,12 @@ void print_stat(int tx_counter, struct info_container *info)
  */
 void help()
 {
+	printf("id - Obtém o saldo atual (balance) da carteira (wallet) cujo identificador é id.\n");
+	printf("trx src_id dest_id amount - O utilizador solicita a criação de uma transação em que a carteira de origem (src_id) envia uma determinada quantidade (amount) de SOT tokens para a carteira de destino (dest_id). Como resultado, obtém o identificador da transação criada (id).\n");
+	printf("rcp id - Obtém o comprovativo (receipt) da execução de uma transação específica, identificada por id. O resultado retorna a instância da transação com todas as suas propriedades preenchidas.\n");
+	printf("stat - Apresenta o estado atual das variáveis do info_container (descrito no final desta secção).\n");
+	printf("help - Mostra as informações de ajuda sobre as operações disponíveis.\n");
+	printf("end - Termina a execução do sistema SOchain.\n");
 }
 
 /* Função principal do SOchain. Inicializa o sistema, chama as funções de alocação
@@ -135,5 +152,8 @@ void help()
 int main(int argc, char *argv[])
 {
 	printf("Hello World!\n");
+	struct info_container info;
+	main_args(argc, argv, &info);
+	help();
 	return 0;
 }
