@@ -10,11 +10,16 @@
  */
 void main_args(int argc, char *argv[], struct info_container *info)
 {
-	sscanf(argv[0], "%f", &info->init_balance);
-	sscanf(argv[1], "%d", &info->n_wallets);
-	sscanf(argv[2], "%d", &info->n_servers);
-	sscanf(argv[3], "%d", &info->buffers_size);
-	sscanf(argv[4], "%d", &info->max_txs);
+	// for (int i = 0; i < argc; i++)
+	// {
+	// 	printf("%d - %s\n", i, argv[i]);
+	// }
+
+	sscanf(argv[1], "%f", &info->init_balance);
+	sscanf(argv[2], "%d", &info->n_wallets);
+	sscanf(argv[3], "%d", &info->n_servers);
+	sscanf(argv[4], "%d", &info->buffers_size);
+	sscanf(argv[5], "%d", &info->max_txs);
 
 	printf("initial balance:  %0.2f\n", info->init_balance);
 	printf("wallet count: ... %d\n", info->n_wallets);
@@ -41,6 +46,20 @@ void create_dynamic_memory_structs(struct info_container *info, struct buffers *
  */
 void create_shared_memory_structs(struct info_container *info, struct buffers *buffs)
 {
+	info->balances = create_shared_memory("wallets", sizeof(float) * info->n_wallets);
+
+	for (int i = 0; i < info->n_wallets; i++)
+	{
+		info->balances[i] = info->init_balance;
+	}
+
+	info->wallets_pids = create_shared_memory("wallets_pids", sizeof(int) * info->n_wallets);
+	info->wallets_stats = create_shared_memory("wallets_stats", sizeof(int) * info->n_wallets);
+
+	info->servers_pids = create_shared_memory("servers_pids", sizeof(int) * info->n_servers);
+	info->servers_stats = create_shared_memory("servers_stats", sizeof(int) * info->n_servers);
+
+	info->terminate = create_shared_memory("terminate", sizeof(int) * 1);
 }
 
 /* Liberta a memória dinâmica previamente reservada. Pode utilizar a
@@ -130,6 +149,31 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
  */
 void print_stat(int tx_counter, struct info_container *info)
 {
+	printf("Initial values:\n");
+	printf("- initial balance:  %0.2f\n", info->init_balance);
+	printf("- wallet count: ... %d\n", info->n_wallets);
+	printf("- server count: ... %d\n", info->n_servers);
+	printf("- buffers size: ... %d\n", info->buffers_size);
+	printf("- max transactions: %d\n", info->max_txs);
+	printf("\n");
+
+	printf("Transactions ocurred: %d\n\n", tx_counter);
+
+	printf("Wallets:\n");
+	for (int i = 0; i < info->n_wallets; i++)
+	{
+		printf("- wallet %d - PID: %d, Num Transactions: %d, Balance: %0.2f\n", i, info->wallets_pids[i], info->wallets_stats[i], info->balances[i]);
+	}
+	printf("\n");
+
+	printf("Servers:\n");
+	for (int i = 0; i < info->n_servers; i++)
+	{
+		printf("- server %d - PID: %d, Num Transactions: %d\n", i, info->servers_pids[i], info->servers_stats[i]);
+	}
+	printf("\n");
+
+	printf("Terminate? %s(%d)\n", *info->terminate ? "no" : "true", *info->terminate);
 }
 
 /* Exibe informações sobre os comandos disponíveis na aplicação.
@@ -153,7 +197,12 @@ int main(int argc, char *argv[])
 {
 	printf("Hello World!\n");
 	struct info_container info;
+	struct buffers buffs;
 	main_args(argc, argv, &info);
-	help();
+
+	create_shared_memory_structs(&info, &buffs);
+
+	print_stat(0, &info);
+
 	return 0;
 }

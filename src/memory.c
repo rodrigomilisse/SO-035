@@ -19,7 +19,9 @@ void *allocate_dynamic_memory(int size)
  */
 void *create_shared_memory(char *name, int size)
 {
-	return (void *)(0);
+	// TODO: test case correct to shared memory
+
+	return malloc(size);
 }
 
 /* Liberta uma zona de memória dinâmica previamente alocada.

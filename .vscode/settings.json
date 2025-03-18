@@ -1,0 +1,9 @@
+{
+  "makefile.launchConfigurations": [
+    {
+      "cwd": "/home/francisco/SO/SOChain/bin",
+      "binaryPath": "/home/francisco/SO/SOChain/bin/main",
+      "binaryArgs": []
+    }
+  ]
+}

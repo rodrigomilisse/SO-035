@@ -29,6 +29,6 @@ clean:
 re: clean all
 
 run: all
-> 	./$(OUTPUT_DIR)/$(PROGRAM_NAME) 0 1 1 64 2
+> 	./$(OUTPUT_DIR)/$(PROGRAM_NAME) 10 2 1 64 5
 
 .PHONY: all clean re run
