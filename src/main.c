@@ -1,5 +1,6 @@
 #include "memory.h"
 #include "main.h"
+#include "process.h"
 
 #include <stdio.h>
 
@@ -114,6 +115,15 @@ void end_execution(struct info_container *info, struct buffers *buffs)
  */
 void wait_processes(struct info_container *info)
 {
+	for (int i = 0; i < info->n_wallets; i++)
+	{
+		info->wallets_stats[i] = wait_process(info->wallets_pids[i]);
+	}
+
+	for (int i = 0; i < info->n_servers; i++)
+	{
+		info->servers_stats[i] = wait_process(info->servers_pids[i]);
+	}
 }
 
 /* Imprime o saldo atual de uma carteira identificada pelo id que ainda está
