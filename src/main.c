@@ -35,6 +35,8 @@ void main_args(int argc, char *argv[], struct info_container *info)
  */
 void create_dynamic_memory_structs(struct info_container *info, struct buffers *buffs)
 {
+	info->wallets_pids = allocate_dynamic_memory(sizeof(int) * info->n_wallets);
+	info->servers_pids = allocate_dynamic_memory(sizeof(int) * info->n_servers);
 }
 
 /* Função que reserva a memória partilhada necessária para a execução
@@ -54,13 +56,13 @@ void create_shared_memory_structs(struct info_container *info, struct buffers *b
 		info->balances[i] = info->init_balance;
 	}
 
-	info->wallets_pids = create_shared_memory("wallets_pids", sizeof(int) * info->n_wallets);
 	info->wallets_stats = create_shared_memory("wallets_stats", sizeof(int) * info->n_wallets);
-
-	info->servers_pids = create_shared_memory("servers_pids", sizeof(int) * info->n_servers);
 	info->servers_stats = create_shared_memory("servers_stats", sizeof(int) * info->n_servers);
-
 	info->terminate = create_shared_memory("terminate", sizeof(int) * 1);
+
+	buffs->buff_main_wallets = create_shared_memory("buff_main_wallets", sizeof(struct ra_buffer));
+	buffs->buff_servers_main = create_shared_memory("buff_servers_main", sizeof(struct ra_buffer));
+	buffs->buff_wallets_servers = create_shared_memory("buff_wallets_servers", sizeof(struct circ_buffer));
 }
 
 /* Liberta a memória dinâmica previamente reservada. Pode utilizar a
@@ -68,6 +70,8 @@ void create_shared_memory_structs(struct info_container *info, struct buffers *b
  */
 void destroy_dynamic_memory_structs(struct info_container *info, struct buffers *buffs)
 {
+	deallocate_dynamic_memory(info->servers_pids);
+	deallocate_dynamic_memory(info->wallets_pids);
 }
 
 /* Liberta a memória partilhada previamente reservada. Pode utilizar a
@@ -75,6 +79,10 @@ void destroy_dynamic_memory_structs(struct info_container *info, struct buffers 
  */
 void destroy_shared_memory_structs(struct info_container *info, struct buffers *buffs)
 {
+	destroy_shared_memory("wallets", info->balances, sizeof(int) * info->n_wallets);
+	destry_shared_memory("wallets_stats", info->wallets_stats, sizeof(int) * info->n_wallets);
+	destry_shared_memory("servers_stats", info->servers_stats, sizeof(int) * info->n_servers);
+	destry_shared_memory("terminate", info->terminate, sizeof(int) * 1);
 }
 
 /* Função que cria os processos das carteiras e servidores.
@@ -211,6 +219,7 @@ int main(int argc, char *argv[])
 	main_args(argc, argv, &info);
 
 	create_shared_memory_structs(&info, &buffs);
+	create_dynamic_memory_structs(&info, &buffs);
 
 	print_stat(0, &info);
 
