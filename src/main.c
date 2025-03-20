@@ -22,11 +22,11 @@ void main_args(int argc, char *argv[], struct info_container *info)
 	sscanf(argv[4], "%d", &info->buffers_size);
 	sscanf(argv[5], "%d", &info->max_txs);
 
-	printf("initial balance:  %0.2f\n", info->init_balance);
-	printf("wallet count: ... %d\n", info->n_wallets);
-	printf("server count: ... %d\n", info->n_servers);
-	printf("buffers size: ... %d\n", info->buffers_size);
-	printf("max transactions: %d\n", info->max_txs);
+	// printf("initial balance:  %0.2f\n", info->init_balance);
+	// printf("wallet count: ... %d\n", info->n_wallets);
+	// printf("server count: ... %d\n", info->n_servers);
+	// printf("buffers size: ... %d\n", info->buffers_size);
+	// printf("max transactions: %d\n", info->max_txs);
 }
 
 /* Função que reserva a memória dinâmica necessária, por exemplo,
@@ -37,6 +37,15 @@ void create_dynamic_memory_structs(struct info_container *info, struct buffers *
 {
 	info->wallets_pids = allocate_dynamic_memory(sizeof(int) * info->n_wallets);
 	info->servers_pids = allocate_dynamic_memory(sizeof(int) * info->n_servers);
+
+	buffs->buff_main_wallets->ptrs = allocate_dynamic_memory(sizeof(int) * info->buffers_size);
+	buffs->buff_main_wallets->buffer = allocate_dynamic_memory(sizeof(struct transaction) * info->buffers_size);
+
+	buffs->buff_servers_main->ptrs = allocate_dynamic_memory(sizeof(int) * info->buffers_size);
+	buffs->buff_servers_main->buffer = allocate_dynamic_memory(sizeof(struct transaction) * info->buffers_size);
+
+	buffs->buff_wallets_servers->buffer = allocate_dynamic_memory(sizeof(struct transaction) * info->buffers_size);
+	buffs->buff_wallets_servers->ptrs = allocate_dynamic_memory(sizeof(struct pointers));
 }
 
 /* Função que reserva a memória partilhada necessária para a execução
@@ -49,20 +58,20 @@ void create_dynamic_memory_structs(struct info_container *info, struct buffers *
  */
 void create_shared_memory_structs(struct info_container *info, struct buffers *buffs)
 {
-	info->balances = create_shared_memory("wallets", sizeof(float) * info->n_wallets);
+	info->balances = create_shared_memory("/wallets", sizeof(float) * info->n_wallets);
 
 	for (int i = 0; i < info->n_wallets; i++)
 	{
 		info->balances[i] = info->init_balance;
 	}
 
-	info->wallets_stats = create_shared_memory("wallets_stats", sizeof(int) * info->n_wallets);
-	info->servers_stats = create_shared_memory("servers_stats", sizeof(int) * info->n_servers);
-	info->terminate = create_shared_memory("terminate", sizeof(int) * 1);
+	info->wallets_stats = create_shared_memory("/wallets_stats", sizeof(int) * info->n_wallets);
+	info->servers_stats = create_shared_memory("/servers_stats", sizeof(int) * info->n_servers);
+	info->terminate = create_shared_memory("/terminate", sizeof(int) * 1);
 
-	buffs->buff_main_wallets = create_shared_memory("buff_main_wallets", sizeof(struct ra_buffer));
-	buffs->buff_servers_main = create_shared_memory("buff_servers_main", sizeof(struct ra_buffer));
-	buffs->buff_wallets_servers = create_shared_memory("buff_wallets_servers", sizeof(struct circ_buffer));
+	buffs->buff_main_wallets = create_shared_memory("/buff_main_wallets", sizeof(struct ra_buffer));
+	buffs->buff_servers_main = create_shared_memory("/buff_servers_main", sizeof(struct ra_buffer));
+	buffs->buff_wallets_servers = create_shared_memory("/buff_wallets_servers", sizeof(struct circ_buffer));
 }
 
 /* Liberta a memória dinâmica previamente reservada. Pode utilizar a
@@ -72,6 +81,15 @@ void destroy_dynamic_memory_structs(struct info_container *info, struct buffers 
 {
 	deallocate_dynamic_memory(info->servers_pids);
 	deallocate_dynamic_memory(info->wallets_pids);
+
+	deallocate_dynamic_memory(buffs->buff_main_wallets->buffer);
+	deallocate_dynamic_memory(buffs->buff_main_wallets->ptrs);
+
+	deallocate_dynamic_memory(buffs->buff_servers_main->buffer);
+	deallocate_dynamic_memory(buffs->buff_servers_main->ptrs);
+
+	deallocate_dynamic_memory(buffs->buff_wallets_servers->buffer);
+	deallocate_dynamic_memory(buffs->buff_wallets_servers->ptrs);
 }
 
 /* Liberta a memória partilhada previamente reservada. Pode utilizar a
@@ -79,10 +97,14 @@ void destroy_dynamic_memory_structs(struct info_container *info, struct buffers 
  */
 void destroy_shared_memory_structs(struct info_container *info, struct buffers *buffs)
 {
-	destroy_shared_memory("wallets", info->balances, sizeof(int) * info->n_wallets);
-	destry_shared_memory("wallets_stats", info->wallets_stats, sizeof(int) * info->n_wallets);
-	destry_shared_memory("servers_stats", info->servers_stats, sizeof(int) * info->n_servers);
-	destry_shared_memory("terminate", info->terminate, sizeof(int) * 1);
+	destroy_shared_memory("/wallets", info->balances, sizeof(int) * info->n_wallets);
+	destroy_shared_memory("/wallets_stats", info->wallets_stats, sizeof(int) * info->n_wallets);
+	destroy_shared_memory("/servers_stats", info->servers_stats, sizeof(int) * info->n_servers);
+	destroy_shared_memory("/terminate", info->terminate, sizeof(int) * 1);
+
+	destroy_shared_memory("/buff_main_wallets", buffs->buff_main_wallets, sizeof(struct ra_buffer));
+	destroy_shared_memory("/buff_servers_main", buffs->buff_servers_main, sizeof(struct ra_buffer));
+	destroy_shared_memory("/buff_wallets_servers", buffs->buff_wallets_servers, sizeof(struct circ_buffer));
 }
 
 /* Função que cria os processos das carteiras e servidores.
@@ -91,6 +113,14 @@ void destroy_shared_memory_structs(struct info_container *info, struct buffers *
  */
 void create_processes(struct info_container *info, struct buffers *buffs)
 {
+	for (int i = 0; i < info->n_wallets; i++)
+	{
+		info->wallets_pids[i] = launch_wallet(i, info, buffs);
+	}
+	for (int i = 0; i < info->n_servers; i++)
+	{
+		info->servers_pids[i] = launch_server(i, info, buffs);
+	}
 }
 
 /* Função responsável pela interação com o utilizador.
@@ -108,6 +138,16 @@ void user_interaction(struct info_container *info, struct buffers *buffs)
  */
 void write_final_statistics(struct info_container *info)
 {
+	printf("A encerrar a execução do SOchain! As estatísticas da execução são:\n");
+	for (int i = 0; i < info->n_wallets; i++)
+	{
+		printf("A carteira %d assinou %d transações e terminou com %2.0f SOT!\n", i, info->wallets_stats[i], info->balances[i]);
+	}
+
+	for (int i = 0; i < info->n_servers; i++)
+	{
+		printf("O servidor %d assinou %d transações!\n", i, info->servers_stats[i]);
+	}
 }
 
 /* Termina a execução do programa. Deve atualizar a flag terminate e,
@@ -116,6 +156,9 @@ void write_final_statistics(struct info_container *info)
  */
 void end_execution(struct info_container *info, struct buffers *buffs)
 {
+	info->terminate = 1;
+	wait_processes(info);
+	write_final_statistics(info);
 }
 
 /* Aguarda a terminação dos processos filhos previamente criados. Pode usar
@@ -191,14 +234,14 @@ void print_stat(int tx_counter, struct info_container *info)
 	}
 	printf("\n");
 
-	printf("Terminate? %s(%d)\n", *info->terminate ? "no" : "true", *info->terminate);
+	printf("Terminate? %s(%d)\n", *info->terminate ? "true" : "false", *info->terminate);
 }
 
 /* Exibe informações sobre os comandos disponíveis na aplicação.
  */
 void help()
 {
-	printf("id - Obtém o saldo atual (balance) da carteira (wallet) cujo identificador é id.\n");
+	printf("bal id - Obtém o saldo atual (balance) da carteira (wallet) cujo identificador é id.\n");
 	printf("trx src_id dest_id amount - O utilizador solicita a criação de uma transação em que a carteira de origem (src_id) envia uma determinada quantidade (amount) de SOT tokens para a carteira de destino (dest_id). Como resultado, obtém o identificador da transação criada (id).\n");
 	printf("rcp id - Obtém o comprovativo (receipt) da execução de uma transação específica, identificada por id. O resultado retorna a instância da transação com todas as suas propriedades preenchidas.\n");
 	printf("stat - Apresenta o estado atual das variáveis do info_container (descrito no final desta secção).\n");
@@ -213,7 +256,6 @@ void help()
  */
 int main(int argc, char *argv[])
 {
-	printf("Hello World!\n");
 	struct info_container info;
 	struct buffers buffs;
 	main_args(argc, argv, &info);
