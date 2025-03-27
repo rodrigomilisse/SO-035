@@ -38,14 +38,11 @@ void create_dynamic_memory_structs(struct info_container *info, struct buffers *
 	info->wallets_pids = allocate_dynamic_memory(sizeof(int) * info->n_wallets);
 	info->servers_pids = allocate_dynamic_memory(sizeof(int) * info->n_servers);
 
-	buffs->buff_main_wallets->ptrs = allocate_dynamic_memory(sizeof(int) * info->buffers_size);
-	buffs->buff_main_wallets->buffer = allocate_dynamic_memory(sizeof(struct transaction) * info->buffers_size);
+	buffs->buff_main_wallets = allocate_dynamic_memory(sizeof(struct ra_buffer));
 
-	buffs->buff_servers_main->ptrs = allocate_dynamic_memory(sizeof(int) * info->buffers_size);
-	buffs->buff_servers_main->buffer = allocate_dynamic_memory(sizeof(struct transaction) * info->buffers_size);
+	buffs->buff_servers_main = allocate_dynamic_memory(sizeof(struct ra_buffer));
 
-	buffs->buff_wallets_servers->buffer = allocate_dynamic_memory(sizeof(struct transaction) * info->buffers_size);
-	buffs->buff_wallets_servers->ptrs = allocate_dynamic_memory(sizeof(struct pointers));
+	buffs->buff_wallets_servers = allocate_dynamic_memory(sizeof(struct circ_buffer));
 }
 
 /* Função que reserva a memória partilhada necessária para a execução
@@ -58,20 +55,26 @@ void create_dynamic_memory_structs(struct info_container *info, struct buffers *
  */
 void create_shared_memory_structs(struct info_container *info, struct buffers *buffs)
 {
-	info->balances = create_shared_memory("/wallets", sizeof(float) * info->n_wallets);
+	info->balances = create_shared_memory(ID_SHM_BALANCES, sizeof(float) * info->n_wallets);
 
 	for (int i = 0; i < info->n_wallets; i++)
 	{
 		info->balances[i] = info->init_balance;
 	}
 
-	info->wallets_stats = create_shared_memory("/wallets_stats", sizeof(int) * info->n_wallets);
-	info->servers_stats = create_shared_memory("/servers_stats", sizeof(int) * info->n_servers);
-	info->terminate = create_shared_memory("/terminate", sizeof(int) * 1);
+	info->wallets_stats = create_shared_memory(ID_SHM_WALLETS_STATS, sizeof(int) * info->n_wallets);
+	info->servers_stats = create_shared_memory(ID_SHM_SERVERS_STATS, sizeof(int) * info->n_servers);
 
-	buffs->buff_main_wallets = create_shared_memory("/buff_main_wallets", sizeof(struct ra_buffer));
-	buffs->buff_servers_main = create_shared_memory("/buff_servers_main", sizeof(struct ra_buffer));
-	buffs->buff_wallets_servers = create_shared_memory("/buff_wallets_servers", sizeof(struct circ_buffer));
+	info->terminate = create_shared_memory(ID_SHM_TERMINATE, sizeof(int) * 1);
+
+	buffs->buff_main_wallets->buffer = create_shared_memory(ID_SHM_MAIN_WALLETS_BUFFER, sizeof(struct transaction) * info->buffers_size);
+	buffs->buff_main_wallets->ptrs = create_shared_memory(ID_SHM_MAIN_WALLETS_PTR, sizeof(int) * info->buffers_size);
+
+	buffs->buff_servers_main->buffer = create_shared_memory(ID_SHM_SERVERS_MAIN_BUFFER, sizeof(struct transaction) * info->buffers_size);
+	buffs->buff_servers_main->ptrs = create_shared_memory(ID_SHM_SERVERS_MAIN_PTR, sizeof(int) * info->buffers_size);
+
+	buffs->buff_wallets_servers->buffer = create_shared_memory(ID_SHM_WALLETS_SERVERS_BUFFER, sizeof(struct transaction) * info->buffers_size);
+	buffs->buff_wallets_servers->ptrs = create_shared_memory(ID_SHM_WALLETS_SERVERS_PTR, sizeof(struct pointers));
 }
 
 /* Liberta a memória dinâmica previamente reservada. Pode utilizar a
@@ -82,14 +85,9 @@ void destroy_dynamic_memory_structs(struct info_container *info, struct buffers 
 	deallocate_dynamic_memory(info->servers_pids);
 	deallocate_dynamic_memory(info->wallets_pids);
 
-	deallocate_dynamic_memory(buffs->buff_main_wallets->buffer);
-	deallocate_dynamic_memory(buffs->buff_main_wallets->ptrs);
-
-	deallocate_dynamic_memory(buffs->buff_servers_main->buffer);
-	deallocate_dynamic_memory(buffs->buff_servers_main->ptrs);
-
-	deallocate_dynamic_memory(buffs->buff_wallets_servers->buffer);
-	deallocate_dynamic_memory(buffs->buff_wallets_servers->ptrs);
+	deallocate_dynamic_memory(buffs->buff_main_wallets);
+	deallocate_dynamic_memory(buffs->buff_servers_main);
+	deallocate_dynamic_memory(buffs->buff_wallets_servers);
 }
 
 /* Liberta a memória partilhada previamente reservada. Pode utilizar a
@@ -97,14 +95,21 @@ void destroy_dynamic_memory_structs(struct info_container *info, struct buffers 
  */
 void destroy_shared_memory_structs(struct info_container *info, struct buffers *buffs)
 {
-	destroy_shared_memory("/wallets", info->balances, sizeof(int) * info->n_wallets);
-	destroy_shared_memory("/wallets_stats", info->wallets_stats, sizeof(int) * info->n_wallets);
-	destroy_shared_memory("/servers_stats", info->servers_stats, sizeof(int) * info->n_servers);
-	destroy_shared_memory("/terminate", info->terminate, sizeof(int) * 1);
+	destroy_shared_memory(ID_SHM_BALANCES, info->balances, sizeof(int) * info->n_wallets);
 
-	destroy_shared_memory("/buff_main_wallets", buffs->buff_main_wallets, sizeof(struct ra_buffer));
-	destroy_shared_memory("/buff_servers_main", buffs->buff_servers_main, sizeof(struct ra_buffer));
-	destroy_shared_memory("/buff_wallets_servers", buffs->buff_wallets_servers, sizeof(struct circ_buffer));
+	destroy_shared_memory(ID_SHM_WALLETS_STATS, info->wallets_stats, sizeof(int) * info->n_wallets);
+	destroy_shared_memory(ID_SHM_SERVERS_STATS, info->servers_stats, sizeof(int) * info->n_servers);
+
+	destroy_shared_memory(ID_SHM_TERMINATE, info->terminate, sizeof(int) * 1);
+
+	destroy_shared_memory(ID_SHM_MAIN_WALLETS_BUFFER, buffs->buff_main_wallets->buffer, sizeof(struct transaction) * info->buffers_size);
+	destroy_shared_memory(ID_SHM_MAIN_WALLETS_PTR, buffs->buff_main_wallets->ptrs, sizeof(int) * info->buffers_size);
+
+	destroy_shared_memory(ID_SHM_SERVERS_MAIN_BUFFER, buffs->buff_servers_main->buffer, sizeof(struct transaction) * info->buffers_size);
+	destroy_shared_memory(ID_SHM_SERVERS_MAIN_PTR, buffs->buff_servers_main->ptrs, sizeof(int) * info->buffers_size);
+
+	destroy_shared_memory(ID_SHM_WALLETS_SERVERS_BUFFER, buffs->buff_wallets_servers->buffer, sizeof(struct transaction) * info->buffers_size);
+	destroy_shared_memory(ID_SHM_WALLETS_SERVERS_PTR, buffs->buff_wallets_servers->ptrs, sizeof(struct pointers));
 }
 
 /* Função que cria os processos das carteiras e servidores.
