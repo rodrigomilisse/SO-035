@@ -1,5 +1,5 @@
-#include "memory.h"
 #include "main.h"
+#include "server.h"
 
 /* Função principal de um servidor. Deve executar um ciclo infinito onde, em
  * cada iteração, lê uma transação do buffer de memória partilhada entre as carteiras e os servidores.
@@ -11,7 +11,13 @@
  */
 int execute_server(int server_id, struct info_container *info, struct buffers *buffs)
 {
-	return 0;
+	int num_transactions = 0;
+	while (!info->terminate)
+	{
+
+		num_transactions++;
+	}
+	exit(num_transactions);
 }
 
 /* Função que lê uma transação do buffer de memória partilhada entre as carteiras e os servidores. Caso não
@@ -36,4 +42,5 @@ void server_process_transaction(struct transaction *tx, int server_id, struct in
  */
 void server_send_transaction(struct transaction *tx, struct info_container *info, struct buffers *buffs)
 {
+
 }
