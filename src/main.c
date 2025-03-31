@@ -135,6 +135,32 @@ void create_processes(struct info_container *info, struct buffers *buffs)
  */
 void user_interaction(struct info_container *info, struct buffers *buffs)
 {
+	char buff[5];
+	scanf("%s", buff);
+	if (!strcmp("bal", buff))
+	{
+		printf("bal\n");
+	}
+	else if (!strcmp("trx", buff))
+	{
+		printf("trx\n");
+	}
+	else if (!strcmp("rcp", buff))
+	{
+		printf("rcp\n");
+	}
+	else if (!strcmp("stat", buff))
+	{
+		printf("stat\n");
+	}
+	else if (!strcmp("help", buff))
+	{
+		printf("help\n");
+	}
+	else if (!strcmp("end", buff))
+	{
+		printf("end\n");
+	}
 }
 
 /* Função que imprime as estatísticas finais do SOchain, incluindo
@@ -265,10 +291,16 @@ int main(int argc, char *argv[])
 	struct buffers buffs;
 	main_args(argc, argv, &info);
 
-	create_shared_memory_structs(&info, &buffs);
 	create_dynamic_memory_structs(&info, &buffs);
+	create_shared_memory_structs(&info, &buffs);
 
-	print_stat(0, &info);
+	while (!*info.terminate)
+	{
+		user_interaction(&info, &buffs);
+	}
+
+	destroy_shared_memory_structs(&info, &buffs);
+	destroy_dynamic_memory_structs(&info, &buffs);
 
 	return 0;
 }
