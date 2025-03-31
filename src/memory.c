@@ -4,7 +4,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <sys/types.h>//
+#include <sys/types.h>
 #include <sys/mman.h>
 
 /* Função que reserva uma zona de memória dinâmica com o tamanho indicado
@@ -26,25 +26,28 @@ void *create_shared_memory(char *name, int size)
 {
 	char full_name[256];
 	sprintf(full_name, "/%s%d", name, getuid());
-	int fd  = shm_open(full_name,  O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+
+	int fd = shm_open(full_name, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
 	if (fd == -1)
 	{
-		printf("erro: create_shared_memory/smh_open()");
+		printf("erro: create_shared_memory/smh_open()\n");
 		return NULL;
 	}
 
 	int ret = ftruncate(fd, size);
 	if (ret == -1)
 	{
-		printf("erro: create_shared_memory/ftruncate()");
+		printf("erro: create_shared_memory/ftruncate()\n");
+		return NULL;
 	}
 
-	void* mem_ptr = memmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	void *mem_ptr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 	if (mem_ptr == -1)
 	{
-		printf("erro: create_shared_memorey/mmap()");
+		printf("erro: create_shared_memorey/mmap()\n");
+		return NULL;
 	}
-	printf("successfull shared allocation: %d", size);
+	printf("successfull shared allocation: %d\n\n", size);
 	return mem_ptr;
 }
 
