@@ -26,6 +26,7 @@ int execute_server(int server_id, struct info_container *info, struct buffers *b
  */
 void server_receive_transaction(struct transaction *tx, struct info_container *info, struct buffers *buffs)
 {
+
 }
 
 /* Função que processa uma transação tx, verificando a validade dos identificadores das carteiras de origem e destino,

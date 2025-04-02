@@ -10,6 +10,19 @@
  */
 int execute_wallet(int wallet_id, struct info_container *info, struct buffers *buffs)
 {
+	int ns = 5000;
+	struct transaction *tx;
+	while(!info->terminate)
+	{
+		tx = buffs->buff_main_wallets->buffer;
+		if (tx->src_id == wallet_id)
+		{
+			wallet_receive_transaction(tx, wallet_id, info, buffs);
+			wallet_process_transaction(tx, wallet_id, info);
+			wallet_send_transaction(tx, info, buffs);
+		}
+		nanosleep(ns);
+	}
 }
 
 /* Função que lê uma transação do buffer de memória partilhada entre a main e as carteiras apenas
@@ -18,6 +31,19 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
  */
 void wallet_receive_transaction(struct transaction *tx, int wallet_id, struct info_container *info, struct buffers *buffs)
 {
+	if(tx->id == wallet_id)
+	{
+		if(info->terminate == 1)
+		{
+			return;
+		}
+		read_main_wallets_buffer(buffs->buff_main_wallets, wallet_id, info->buffers_size, tx);
+	}
+}
+
+void sign_transaction(struct transaction *tx, int wallet_id)
+{
+	tx->wallet_signature = wallet_id;
 }
 
 /* Função que assina uma transação comprovando que a carteira de origem src_id da transação corresponde
@@ -26,6 +52,8 @@ void wallet_receive_transaction(struct transaction *tx, int wallet_id, struct in
  */
 void wallet_process_transaction(struct transaction *tx, int wallet_id, struct info_container *info)
 {
+	sign_transaction(tx, wallet_id);
+	info->wallets_stats[wallet_id/*id de wallet para índice?*/]++;
 }
 
 /* Função que escreve uma transação assinada no buffer de memória partilhada entre
@@ -34,4 +62,5 @@ void wallet_process_transaction(struct transaction *tx, int wallet_id, struct in
  */
 void wallet_send_transaction(struct transaction *tx, struct info_container *info, struct buffers *buffs)
 {
+	write_wallets_servers_buffer(buffs->buff_wallets_servers, info->buffers_size, tx);
 }
