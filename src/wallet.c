@@ -1,5 +1,9 @@
 #include "memory.h"
 #include "main.h"
+#include <time.h>
+#include "unistd.h"
+#include "server.h"
+#include "wallet.h"
 
 /* Função principal de uma carteira. Deve executar um ciclo infinito onde,
  * em cada iteração, lê uma transação da main apenas caso o src_id da transação seja
@@ -10,9 +14,11 @@
  */
 int execute_wallet(int wallet_id, struct info_container *info, struct buffers *buffs)
 {
-	int ns = 5000;
+	int *num_txs = &info->wallets_stats[wallet_id/*wallet id indexes stats?*/];
+	int max_txs = info->max_txs;
+	int SECONDS = 1;
 	struct transaction *tx;
-	while(!info->terminate)
+	while(!*info->terminate && *num_txs < max_txs /*verificar?*/)
 	{
 		tx = buffs->buff_main_wallets->buffer;
 		if (tx->src_id == wallet_id)
@@ -21,8 +27,9 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
 			wallet_process_transaction(tx, wallet_id, info);
 			wallet_send_transaction(tx, info, buffs);
 		}
-		nanosleep(ns);
+		sleep(SECONDS);
 	}
+	return *num_txs;
 }
 
 /* Função que lê uma transação do buffer de memória partilhada entre a main e as carteiras apenas
@@ -31,17 +38,13 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
  */
 void wallet_receive_transaction(struct transaction *tx, int wallet_id, struct info_container *info, struct buffers *buffs)
 {
-	if(tx->id == wallet_id)
+	if(tx->id == wallet_id && *(info->terminate) != 1)
 	{
-		if(info->terminate == 1)
-		{
-			return;
-		}
 		read_main_wallets_buffer(buffs->buff_main_wallets, wallet_id, info->buffers_size, tx);
 	}
 }
 
-void sign_transaction(struct transaction *tx, int wallet_id)
+/*inline, podemos?*/ static void sign_transaction(struct transaction *tx, int wallet_id)
 {
 	tx->wallet_signature = wallet_id;
 }
@@ -52,8 +55,9 @@ void sign_transaction(struct transaction *tx, int wallet_id)
  */
 void wallet_process_transaction(struct transaction *tx, int wallet_id, struct info_container *info)
 {
+	int *num_txs = &info->wallets_stats[wallet_id/*id de wallet para índice?*/];
 	sign_transaction(tx, wallet_id);
-	info->wallets_stats[wallet_id/*id de wallet para índice?*/]++;
+	(*num_txs)++;
 }
 
 /* Função que escreve uma transação assinada no buffer de memória partilhada entre

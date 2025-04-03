@@ -42,7 +42,7 @@ void *create_shared_memory(char *name, int size)
 	}
 
 	void *mem_ptr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-	if (mem_ptr == -1)
+	if (mem_ptr == (void*) -1)
 	{
 		printf("erro: create_shared_memorey/mmap()\n");
 		return NULL;

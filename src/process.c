@@ -3,8 +3,10 @@
 #include "process.h"
 #include "wallet.h"
 #include "server.h"
-
 #include <stdlib.h>
+#include <unistd.h>
+//#include <sys/types.h> 
+#include <sys/wait.h>
 
 /* Função que inicia um novo processo Wallet através da função fork do SO. O novo
  * processo filho irá executar a função execute_wallet respetiva, fazendo exit do retorno.
@@ -12,11 +14,11 @@
  */
 int launch_wallet(int wallet_id, struct info_container *info, struct buffers *buffs)
 {
-	int pid = fork();
+	/*pid_t?*/ int pid = fork();
 
 	if (pid == 0)
 	{
-		execute_wallet(wallet_id, info, buffs);
+		exit(execute_wallet(wallet_id, info, buffs));
 	}
 	else
 	{
@@ -34,7 +36,7 @@ int launch_server(int server_id, struct info_container *info, struct buffers *bu
 
 	if (pid == 0)
 	{
-		execute_server(server_id, info, buffs);
+		exit(execute_server(server_id, info, buffs));
 	}
 	else
 	{

@@ -1,7 +1,7 @@
 #include "memory.h"
 #include "main.h"
 #include "process.h"
-
+#include <string.h>
 #include <stdio.h>
 
 /* Função que lê do stdin com o scanf apropriado para cada tipo de dados
@@ -187,7 +187,7 @@ void write_final_statistics(struct info_container *info)
  */
 void end_execution(struct info_container *info, struct buffers *buffs)
 {
-	info->terminate = 1;
+	*info->terminate = 1;
 	wait_processes(info);
 	write_final_statistics(info);
 }
