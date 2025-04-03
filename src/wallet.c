@@ -16,7 +16,7 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
 {
 	int *num_txs = &info->wallets_stats[wallet_id/*wallet id indexes stats?*/];
 	int max_txs = info->max_txs;
-	int SECONDS = 1;
+	int SECONDS = 1 //change to ms!;
 	struct transaction *tx;
 	while(!*info->terminate && *num_txs < max_txs /*verificar?*/)
 	{
