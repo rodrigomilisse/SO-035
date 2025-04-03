@@ -12,19 +12,19 @@
  */
 int execute_server(int server_id, struct info_container *info, struct buffers *buffs)
 {
-	int *num_txs = info->servers_stats;
+	int *num_txs = &info->servers_stats[server_id/*indexes?*/];
 	int max_txs = info->max_txs;
 	struct transaction *tx;
 	int SECONDS = 1; //change to ms!
-	while (!*info->terminate && num_txs[server_id] < max_txs/*verificar max txs?*/)
+	while (!*info->terminate && *num_txs < max_txs/*verificar max txs?*/)
 	{
-		tx = &buffs->buff_servers_main->buffer[num_txs[server_id]%info->buffers_size];
+		tx = &buffs->buff_servers_main->buffer[*num_txs%info->buffers_size];
 		server_receive_transaction(tx, info, buffs);
 		server_process_transaction(tx, server_id, info);
 		server_send_transaction(tx, info, buffs);
 		sleep(SECONDS);
 	}
-	exit(num_txs[server_id/*server id indexa stats?*/]);
+	return *num_txs;
 }
 
 /* Função que lê uma transação do buffer de memória partilhada entre as carteiras e os servidores. Caso não
