@@ -1,5 +1,5 @@
-#include "main.h"
 #include "server.h"
+#include "main.h"
 #include "unistd.h"
 
 /* Função principal de um servidor. Deve executar um ciclo infinito onde, em

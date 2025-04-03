@@ -1,6 +1,6 @@
+#include "process.h"
 #include "memory.h"
 #include "main.h"
-#include "process.h"
 #include "wallet.h"
 #include "server.h"
 #include <stdlib.h>

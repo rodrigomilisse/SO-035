@@ -1,5 +1,5 @@
-#include <stdlib.h>
 #include "memory.h"
+#include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/stat.h>
