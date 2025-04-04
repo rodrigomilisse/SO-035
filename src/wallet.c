@@ -1,9 +1,9 @@
 #include "wallet.h"
 #include "memory.h"
 #include "main.h"
-#include <time.h>
-#include "unistd.h"
 #include "server.h"
+#include <time.h>
+#include <stdio.h>
 
 /* Função principal de uma carteira. Deve executar um ciclo infinito onde,
  * em cada iteração, lê uma transação da main apenas caso o src_id da transação seja
@@ -14,7 +14,7 @@
  */
 int execute_wallet(int wallet_id, struct info_container *info, struct buffers *buffs)
 {
-	int *num_txs = &info->wallets_stats[wallet_id/*wallet id indexes stats?*/];
+	int *num_txs = &info->wallets_stats[wallet_id];
 	int alguns_milissegundos = 3;
 	const struct timespec ts = {.tv_sec = 0, .tv_nsec = (long) alguns_milissegundos * 1000};
 	struct transaction *tx = allocate_dynamic_memory(sizeof(struct transaction));
@@ -22,7 +22,7 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
 	{
 		printf("erro: execute_wallet/allocatie_dynamic_memory()");
 	}
-	while(!*info->terminate && *num_txs < info->max_txs/*verificar?*/)
+	while(!*info->terminate && *num_txs < info->max_txs/*verificar*/)
 	{
 		if (tx->src_id == wallet_id)
 		{
@@ -30,7 +30,7 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
 			wallet_process_transaction(tx, wallet_id, info);
 			wallet_send_transaction(tx, info, buffs);
 		}
-		nanosleep(ts, NULL);
+		nanosleep(&ts, NULL);
 	}
 	return *num_txs;
 }
@@ -58,7 +58,7 @@ static void sign_transaction(struct transaction *tx, int wallet_id)
  */
 void wallet_process_transaction(struct transaction *tx, int wallet_id, struct info_container *info)
 {
-	int *num_txs = &info->wallets_stats[wallet_id/*id de wallet para índice?*/];
+	int *num_txs = &info->wallets_stats[wallet_id];
 	sign_transaction(tx, wallet_id);
 	(*num_txs)++;
 }

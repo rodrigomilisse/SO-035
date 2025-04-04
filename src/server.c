@@ -2,7 +2,7 @@
 #include "main.h"
 #include <unistd.h>
 #include <time.h>
-
+#include <stdio.h>
 char is_valid_id(struct transaction* tx, struct info_container *info)
 {
 	return  tx->id >= 0 && tx->id < info->max_txs; //TODO
@@ -33,7 +33,7 @@ int execute_server(int server_id, struct info_container *info, struct buffers *b
 			server_receive_transaction(tx, info, buffs);
 			server_process_transaction(tx, server_id, info);
 			server_send_transaction(tx, info, buffs);
-			nanosleep(ts, NULL);
+			nanosleep(&ts, NULL);
 		}
 	}
 	return *num_txs;

@@ -14,7 +14,7 @@
  */
 int launch_wallet(int wallet_id, struct info_container *info, struct buffers *buffs)
 {
-	/*pid_t?*/ int pid = fork();
+	int pid = fork();
 
 	if (pid == 0)
 	{
