@@ -42,12 +42,12 @@ void *create_shared_memory(char *name, int size)
 	}
 
 	void *mem_ptr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-	if (mem_ptr == (void*) -1)
+	if (mem_ptr == MAP_FAILED)
 	{
-		printf("erro: create_shared_memorey/mmap()\n");
+		printf("erro: create_shared_memory/mmap()\n");
 		return NULL;
 	}
-	printf("successfull shared allocation: %d\n\n", size);
+	printf("successfull shared allocation: %d\n", size);
 	return mem_ptr;
 }
 
@@ -137,7 +137,7 @@ void read_main_wallets_buffer(struct ra_buffer *buffer, int wallet_id, int buffe
 		{
 			buffer->ptrs[i] = 0;
 			*tx = buffer->buffer[i];
-			buffer->buffer->id = -1;
+			buffer->buffer[i].id = -1;
 			return;
 		}
 	}
