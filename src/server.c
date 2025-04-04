@@ -1,6 +1,7 @@
 #include "server.h"
 #include "main.h"
-#include "unistd.h"
+#include <unistd.h>
+#include <time.h>
 
 char is_valid_id(struct transaction* tx, struct info_container *info)
 {
@@ -16,22 +17,23 @@ char is_valid_id(struct transaction* tx, struct info_container *info)
  */
 int execute_server(int server_id, struct info_container *info, struct buffers *buffs)
 {
-	int *num_txs = &info->servers_stats[server_id/*indexes?*/];
-	int max_txs = info->max_txs;
-	int SECONDS = 1; //change to ms!
+	int *num_txs = &info->servers_stats[server_id];
 	struct transaction *tx = allocate_dynamic_memory(sizeof(struct transaction));
+	int alguns_milissegundos = 3;
+	const struct timespec ts = {.tv_sec = 0, .tv_nsec = (long) alguns_milissegundos * 1000};
+
 	if (tx == NULL)
 	{
 		printf("erro: execute_server/allocatie_dynamic_memory()");
 	}
-	while (!*info->terminate &&*num_txs < max_txs/*verificar max txs?*/)
+	while (!*info->terminate && *num_txs < info->max_txs/*verificar max txs?*/)
 	{
 		if (is_valid_id(tx, info))
 		{
 			server_receive_transaction(tx, info, buffs);
 			server_process_transaction(tx, server_id, info);
 			server_send_transaction(tx, info, buffs);
-			sleep(SECONDS);
+			nanosleep(ts, NULL);
 		}
 	}
 	return *num_txs;
@@ -55,7 +57,7 @@ static char verify_wallet_ids(struct transaction *tx, struct info_container *inf
 }
 static char verify_funds(struct transaction *tx, float *balances)
 {
-	return tx->amount <= balances[tx->src_id/*ids index balances?*/];
+	return tx->amount <= balances[tx->src_id];
 }
 static char verify_wallet_signature(struct transaction *tx)
 {
@@ -92,9 +94,8 @@ void server_process_transaction(struct transaction *tx, int server_id, struct in
 
 static char verify_server_signature(struct transaction *tx)
 {
-	return !!tx->server_signature; //TODO 0 é assinatura válida?
+	return tx->server_signature >= 0;
 }
-/**/
 /* Função que escreve uma transação correta processada no buffer de memória partilhada entre os servidores e a main.
  * Caso o servidor não tenha assinado a transação, essa não será escrita pois significa que a transação era inválida.
  * Se não houver espaço no buffer, a transação não é enviada e o recibo perde-se.

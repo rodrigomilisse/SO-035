@@ -1,4 +1,4 @@
-#include "memory.h"
+#include "main.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
@@ -84,13 +84,13 @@ void write_main_wallets_buffer(struct ra_buffer *buffer, int buffer_size, struct
 	}
 }
 
-char isFull(struct circ_buffer *buffer)
+char isFull(struct circ_buffer *buffer, int buffer_size)
 {
-	return buffer->ptrs->in == buffer->ptrs->out && buffer->buffer[buffer->ptrs->in].id != -1;
+	return (buffer->ptrs->in + 1) % buffer_size == buffer->ptrs->out;
 }
 char isEmpty(struct circ_buffer *buffer)
 {
-	return buffer->ptrs->in == buffer->ptrs->out && buffer->buffer[buffer->ptrs->in].id == -1;
+	return buffer->ptrs->in == buffer->ptrs->out;
 }
 
 /* Função que escreve uma transação no buffer de memória partilhada entre as carteiras e os servidores.
@@ -99,7 +99,7 @@ char isEmpty(struct circ_buffer *buffer)
  */
 void write_wallets_servers_buffer(struct circ_buffer *buffer, int buffer_size, struct transaction *tx)
 {
-	if (!isFull(buffer))
+	if (!isFull(buffer, buffer_size))
 	{
 		buffer->buffer[buffer->ptrs->in++] = *tx;
 		buffer->ptrs->in %= buffer_size;
@@ -141,6 +141,7 @@ void read_main_wallets_buffer(struct ra_buffer *buffer, int wallet_id, int buffe
 			return;
 		}
 	}
+	tx->id = -1;
 }
 
 /* Função que lê uma transação do buffer entre as carteiras e os servidores, se houver alguma disponível para ler.
@@ -155,6 +156,10 @@ void read_wallets_servers_buffer(struct circ_buffer *buffer, int buffer_size, st
 		*tx = buffer->buffer[buffer->ptrs->out++];
 		buffer->ptrs->out %= buffer_size;
 	}
+	else
+	{
+		tx->id = -1;
+	}
 }
 
 /* Função que lê uma transação do buffer entre os servidores e a Main, se houver alguma disponível para ler
@@ -165,7 +170,7 @@ void read_servers_main_buffer(struct ra_buffer *buffer, int tx_id, int buffer_si
 {
 	for (int i = 0; i < buffer_size; i++)
 	{
-		if(buffer->ptrs[i] == 1)
+		if(buffer->ptrs[i] == 1 && tx->id == tx_id)
 		{
 			buffer->ptrs[i] = 0;
 			*tx = buffer->buffer[i];
