@@ -18,11 +18,14 @@ int execute_server(int server_id, struct info_container *info, struct buffers *b
 {
 	int *num_txs = &info->servers_stats[server_id/*indexes?*/];
 	int max_txs = info->max_txs;
-	struct transaction *tx;
 	int SECONDS = 1; //change to ms!
+	struct transaction *tx = allocate_dynamic_memory(sizeof(struct transaction));
+	if (tx == NULL)
+	{
+		printf("erro: execute_server/allocatie_dynamic_memory()");
+	}
 	while (!*info->terminate &&*num_txs < max_txs/*verificar max txs?*/)
 	{
-		tx = allocate_dynamic_memory(sizeof(struct transaction));
 		if (is_valid_id(tx, info))
 		{
 			server_receive_transaction(tx, info, buffs);
@@ -89,7 +92,7 @@ void server_process_transaction(struct transaction *tx, int server_id, struct in
 
 static char verify_server_signature(struct transaction *tx)
 {
-	return !!tx->server_signature; //TODO
+	return !!tx->server_signature; //TODO 0 é assinatura válida?
 }
 /**/
 /* Função que escreve uma transação correta processada no buffer de memória partilhada entre os servidores e a main.

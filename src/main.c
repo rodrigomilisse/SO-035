@@ -285,6 +285,8 @@ void help()
  * e aguarda o encerramento dos processos para chamar as funções para libertar
  * a memória alocada.
  */
+
+#include <stdbool.h>
 int main(int argc, char *argv[])
 {
 	struct info_container info;

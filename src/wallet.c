@@ -17,10 +17,13 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
 	int *num_txs = &info->wallets_stats[wallet_id/*wallet id indexes stats?*/];
 	int max_txs = info->max_txs;
 	int SECONDS = 1; //change to ms!
-	struct transaction *tx;
+	struct transaction *tx = allocate_dynamic_memory(sizeof(struct transaction));
+	if (tx == NULL)
+	{
+		printf("erro: execute_wallet/allocatie_dynamic_memory()");
+	}
 	while(!*info->terminate && *num_txs < max_txs /*verificar?*/)
 	{
-		tx = allocate_dynamic_memory(sizeof(struct transaction));
 		if (tx->src_id == wallet_id)
 		{
 			wallet_receive_transaction(tx, wallet_id, info, buffs);
