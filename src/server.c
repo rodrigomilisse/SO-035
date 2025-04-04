@@ -2,6 +2,10 @@
 #include "main.h"
 #include "unistd.h"
 
+char is_valid_id(struct transaction* tx, struct info_container *info)
+{
+	return  tx->id >= 0 && tx->id < info->max_txs; //TODO
+}
 /* Função principal de um servidor. Deve executar um ciclo infinito onde, em
  * cada iteração, lê uma transação do buffer de memória partilhada entre as carteiras e os servidores.
  * Se a transação tiver um id válido e info->terminate ainda for 0, o servidor valida, processa e assina
@@ -16,13 +20,16 @@ int execute_server(int server_id, struct info_container *info, struct buffers *b
 	int max_txs = info->max_txs;
 	struct transaction *tx;
 	int SECONDS = 1; //change to ms!
-	while (!*info->terminate && *num_txs < max_txs/*verificar max txs?*/)
+	while (!*info->terminate &&*num_txs < max_txs/*verificar max txs?*/)
 	{
-		tx = &buffs->buff_servers_main->buffer[*num_txs%info->buffers_size];
-		server_receive_transaction(tx, info, buffs);
-		server_process_transaction(tx, server_id, info);
-		server_send_transaction(tx, info, buffs);
-		sleep(SECONDS);
+		tx = allocate_dynamic_memory(sizeof(struct transaction));
+		if (is_valid_id(tx, info))
+		{
+			server_receive_transaction(tx, info, buffs);
+			server_process_transaction(tx, server_id, info);
+			server_send_transaction(tx, info, buffs);
+			sleep(SECONDS);
+		}
 	}
 	return *num_txs;
 }
@@ -39,34 +46,35 @@ void server_receive_transaction(struct transaction *tx, struct info_container *i
 	}
 }
 
-static /*inline*/ int verify_wallet_ids(struct transaction *tx, struct info_container *info)
+static char verify_wallet_ids(struct transaction *tx, struct info_container *info)
 {
-	return tx->src_id < info->n_wallets && tx->dest_id < info->n_wallets;
+	return tx->src_id < info->n_wallets && tx->dest_id < info->n_wallets; //TODO
 }
-static /*inline*/ int verify_funds(struct transaction *tx, float *balances)
+static char verify_funds(struct transaction *tx, float *balances)
 {
 	return tx->amount <= balances[tx->src_id/*ids index balances?*/];
 }
-static /*inline*/ int verify_wallet_signature(struct transaction *tx)
+static char verify_wallet_signature(struct transaction *tx)
 {
 	return tx->wallet_signature == tx->src_id;
 }
-static /*inline*/ void sign_transaction(struct transaction *tx, int server_id)
+static void sign_transaction(struct transaction *tx, int server_id)
 {
 	tx->server_signature = server_id;
 }
-static /*inline*/ void transfer_funds(struct transaction *tx, float *balances)
+static void transfer_funds(struct transaction *tx, float *balances)
 {
 	balances[tx->src_id] -= tx->amount;
 	balances[tx->dest_id] += tx->amount;
 }
+
 /* Função que processa uma transação tx, verificando a validade dos identificadores das carteiras de origem e destino,
  * dos fundos da carteira de origem e a assinatura da carteira de origem. Atualiza os saldos das carteiras envolvidas,
  * adiciona a assinatura do servidor e incrementa o contador de transações processadas pelo servidor.
  */
 void server_process_transaction(struct transaction *tx, int server_id, struct info_container *info)
 {
-	int transaction_is_valid;
+	char transaction_is_valid;
 	int *num_txs = &info->servers_stats[server_id]; 
 	transaction_is_valid = 	verify_wallet_ids(tx, info);
 	transaction_is_valid &=	verify_funds(tx, info->balances);
@@ -79,9 +87,9 @@ void server_process_transaction(struct transaction *tx, int server_id, struct in
 	}
 }
 
-static /*inline*/ int verify_server_signature(struct transaction *tx)
+static char verify_server_signature(struct transaction *tx)
 {
-	return !!tx->server_signature;
+	return !!tx->server_signature; //TODO
 }
 /**/
 /* Função que escreve uma transação correta processada no buffer de memória partilhada entre os servidores e a main.
@@ -90,7 +98,7 @@ static /*inline*/ int verify_server_signature(struct transaction *tx)
  */
 void server_send_transaction(struct transaction *tx, struct info_container *info, struct buffers *buffs)
 {
-	int is_valid = verify_server_signature(tx);
+	char is_valid = verify_server_signature(tx);
 	
 	if (is_valid)
 	{

@@ -73,6 +73,24 @@ void destroy_shared_memory(char *name, void *ptr, int size)
  */
 void write_main_wallets_buffer(struct ra_buffer *buffer, int buffer_size, struct transaction *tx)
 {
+	for (int i = 0; i < buffer_size; i++)
+	{
+		if(buffer->ptrs[i] == 0)
+		{
+			buffer->ptrs[i] = 1;
+			buffer->buffer[i] = *tx;
+			return;
+		}
+	}
+}
+
+char isFull(struct circ_buffer *buffer)
+{
+	return buffer->ptrs->in == buffer->ptrs->out && buffer->buffer[buffer->ptrs->in].id != -1;
+}
+char isEmpty(struct circ_buffer *buffer)
+{
+	return buffer->ptrs->in == buffer->ptrs->out && buffer->buffer[buffer->ptrs->in].id == -1;
 }
 
 /* Função que escreve uma transação no buffer de memória partilhada entre as carteiras e os servidores.
@@ -81,6 +99,11 @@ void write_main_wallets_buffer(struct ra_buffer *buffer, int buffer_size, struct
  */
 void write_wallets_servers_buffer(struct circ_buffer *buffer, int buffer_size, struct transaction *tx)
 {
+	if (!isFull(buffer))
+	{
+		buffer->buffer[buffer->ptrs->in++] = *tx;
+		buffer->ptrs->in %= buffer_size;
+	}
 }
 
 /* Função que escreve uma transação no buffer de memória partilhada entre os servidores e a Main, a qual
@@ -90,6 +113,15 @@ void write_wallets_servers_buffer(struct circ_buffer *buffer, int buffer_size, s
  */
 void write_servers_main_buffer(struct ra_buffer *buffer, int buffer_size, struct transaction *tx)
 {
+	for (int i = 0; i < buffer_size; i++)
+	{
+		if (buffer->ptrs[i] == 0)
+		{
+			buffer->ptrs[i] = 1;
+			buffer->buffer[i] = *tx;
+			return;
+		}
+	}
 }
 
 /* Função que lê uma transação do buffer entre a Main e as carteiras, se houver alguma disponível para ler
@@ -99,6 +131,16 @@ void write_servers_main_buffer(struct ra_buffer *buffer, int buffer_size, struct
  */
 void read_main_wallets_buffer(struct ra_buffer *buffer, int wallet_id, int buffer_size, struct transaction *tx)
 {
+	for (int i = 0; i < buffer_size; i++)
+	{
+		if(buffer->ptrs[i] == 1)
+		{
+			buffer->ptrs[i] = 0;
+			*tx = buffer->buffer[i];
+			buffer->buffer->id = -1;
+			return;
+		}
+	}
 }
 
 /* Função que lê uma transação do buffer entre as carteiras e os servidores, se houver alguma disponível para ler.
@@ -108,6 +150,11 @@ void read_main_wallets_buffer(struct ra_buffer *buffer, int wallet_id, int buffe
  */
 void read_wallets_servers_buffer(struct circ_buffer *buffer, int buffer_size, struct transaction *tx)
 {
+	if (!isEmpty(buffer))
+	{
+		*tx = buffer->buffer[buffer->ptrs->out++];
+		buffer->ptrs->out %= buffer_size;
+	}
 }
 
 /* Função que lê uma transação do buffer entre os servidores e a Main, se houver alguma disponível para ler
@@ -116,5 +163,14 @@ void read_wallets_servers_buffer(struct circ_buffer *buffer, int buffer_size, st
  */
 void read_servers_main_buffer(struct ra_buffer *buffer, int tx_id, int buffer_size, struct transaction *tx)
 {
-	
+	for (int i = 0; i < buffer_size; i++)
+	{
+		if(buffer->ptrs[i] == 1)
+		{
+			buffer->ptrs[i] = 0;
+			*tx = buffer->buffer[i];
+			buffer->buffer->id = -1;
+			return;
+		}
+	}
 }

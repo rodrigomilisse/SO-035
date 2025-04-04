@@ -20,7 +20,7 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
 	struct transaction *tx;
 	while(!*info->terminate && *num_txs < max_txs /*verificar?*/)
 	{
-		tx = buffs->buff_main_wallets->buffer;
+		tx = allocate_dynamic_memory(sizeof(struct transaction));
 		if (tx->src_id == wallet_id)
 		{
 			wallet_receive_transaction(tx, wallet_id, info, buffs);
@@ -44,7 +44,7 @@ void wallet_receive_transaction(struct transaction *tx, int wallet_id, struct in
 	}
 }
 
-/*inline, podemos?*/ static void sign_transaction(struct transaction *tx, int wallet_id)
+static void sign_transaction(struct transaction *tx, int wallet_id)
 {
 	tx->wallet_signature = wallet_id;
 }
