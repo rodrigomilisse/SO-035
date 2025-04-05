@@ -17,24 +17,28 @@ int execute_server(int server_id, struct info_container *info, struct buffers *b
 	int *num_txs = &info->servers_stats[server_id];
 	struct transaction tx;
 	int alguns_milissegundos = 3;
-	const struct timespec ts = {.tv_sec = 0, .tv_nsec = (long)alguns_milissegundos * 1000};
+	const struct timespec ts = {.tv_sec = 0, .tv_nsec = (long)alguns_milissegundos * 1000000};
 
 	while (!*info->terminate)
 	{
 		server_receive_transaction(&tx, info, buffs);
-		if (tx.id != -1)
+		if (tx.id == -1)
 		{
-			server_process_transaction(&tx, server_id, info);
+			nanosleep(&ts, NULL);
+			continue;
+		}
+		server_process_transaction(&tx, server_id, info);
+		server_send_transaction(&tx, info, buffs);
+		if (tx.server_signature != -1)
+		{
 			printf("[Server %d] Li a transação %d do buffer e esta foi processada corretamente!\n"
 				"[Server %d] ledger <- [tx.id %d, src_id %d, dest_id %d, amount %0.2f]\n\n",
 				server_id, tx.id, server_id, tx.id, tx.src_id, tx.dest_id, tx.amount);
-			server_send_transaction(&tx, info, buffs);
 		}
 		else
 		{
-
-			nanosleep(&ts, NULL);
-		}
+			printf("[Server %d] A transação 0 falhou por alguma razão!\n\n", server_id);
+		} 
 	}
 	return *num_txs;
 }
@@ -53,7 +57,7 @@ void server_receive_transaction(struct transaction *tx, struct info_container *i
 
 static char verify_wallet_ids(struct transaction *tx, struct info_container *info)
 {
-	return tx->src_id < info->n_wallets && tx->dest_id < info->n_wallets; // TODO
+	return tx->src_id < info->n_wallets && tx->dest_id < info->n_wallets;
 }
 static char verify_funds(struct transaction *tx, float *balances)
 {

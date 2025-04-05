@@ -16,7 +16,7 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
 {
 	int *num_txs = &info->wallets_stats[wallet_id];
 	int alguns_milissegundos = 3;
-	const struct timespec ts = {.tv_sec = 0, .tv_nsec = (long)alguns_milissegundos * 1000};
+	const struct timespec ts = {.tv_sec = 0, .tv_nsec = (long)alguns_milissegundos * 1000000};
 	struct transaction tx;
 	while (!*info->terminate)
 	{
@@ -25,7 +25,7 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
 		{
 			wallet_process_transaction(&tx, wallet_id, info);
 			wallet_send_transaction(&tx, info, buffs);
-			printf("[Wallet %d] Li a transação %d do buffer e assinei!\n", wallet_id, tx.id);
+			printf("[Wallet %d] Li a transação %d do buffer e a assinei!\n", wallet_id, tx.id);
 			tx.id = -1;
 		}
 		else

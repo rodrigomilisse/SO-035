@@ -3,6 +3,7 @@
 #include "process.h"
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
 
 /* Função que lê do stdin com o scanf apropriado para cada tipo de dados
  * e valida os argumentos da aplicação, incluindo o saldo inicial,
@@ -136,7 +137,9 @@ void create_processes(struct info_container *info, struct buffers *buffs)
  */
 void user_interaction(struct info_container *info, struct buffers *buffs)
 {
-	int trx_counter = 0;
+	int tx_counter = 0;
+	int alguns_milissegundos = 3;
+	const struct timespec ts = {.tv_sec = 0, .tv_nsec = (long) alguns_milissegundos * 1000000};
 	while (!*info->terminate)
 	{
 		char buff[5];
@@ -148,7 +151,7 @@ void user_interaction(struct info_container *info, struct buffers *buffs)
 		}
 		else if (!strcmp("trx", buff))
 		{
-			create_transaction(&trx_counter, info, buffs);
+			create_transaction(&tx_counter, info, buffs);
 		}
 		else if (!strcmp("rcp", buff))
 		{
@@ -156,7 +159,7 @@ void user_interaction(struct info_container *info, struct buffers *buffs)
 		}
 		else if (!strcmp("stat", buff))
 		{
-			print_stat(trx_counter, info);
+			print_stat(tx_counter, info);
 		}
 		else if (!strcmp("help", buff))
 		{
@@ -166,6 +169,7 @@ void user_interaction(struct info_container *info, struct buffers *buffs)
 		{
 			end_execution(info, buffs);
 		}
+		nanosleep(&ts, NULL);
 	}
 }
 
@@ -239,12 +243,13 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
 		return;
 	}
 
-	struct transaction tx;
+	struct transaction tx = {.wallet_signature = -1, .server_signature = -1};
 	scanf("%d %d %f", &tx.src_id, &tx.dest_id, &tx.amount);
 	tx.id = *tx_counter;
 	(*tx_counter)++;
 
-	printf("[Main] A transação %d foi criada para transferir %0.2f SOT da carteira %d para a cartera %d!\n", tx.id, tx.amount, tx.src_id, tx.dest_id);
+	printf("[Main] A transação %d foi criada para transferir %0.2f SOT da carteira %d para a carteira %d!\n", 
+		tx.id, tx.amount, tx.src_id, tx.dest_id);
 	write_main_wallets_buffer(buffs->buff_main_wallets, info->buffers_size, &tx);
 }
 
@@ -256,17 +261,17 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 {
 	int id;
 	scanf("%d", &id);
-	struct transaction trx;
-	read_servers_main_buffer(buffs->buff_servers_main, id, info->buffers_size, &trx);
-	if (trx.id == -1)
+	struct transaction tx;
+	read_servers_main_buffer(buffs->buff_servers_main, id, info->buffers_size, &tx);
+	if (tx.id == -1)
 	{
-		printf("[Main] O comprovativo da execução da transação %d não está disponível.\n\n", trx.id);
+		printf("[Main] O comprovativo da execução da transação %d não está disponível.\n\n", tx.id);
 	}
 	else
 	{
 		printf("[Main] O comprovativo da execução %d foi obtido.\n"
 			"[Main] O comprovativo da transação id %d contém src_id %d, dest_id %d, amount %0.2f e foi assinado pela carteira %d e servidor %d.\n\n", 
-			trx.id, trx.id, trx.src_id, trx.dest_id, trx.amount, trx.wallet_signature, trx.wallet_signature);
+			tx.id, tx.id, tx.src_id, tx.dest_id, tx.amount, tx.wallet_signature, tx.wallet_signature);
 	}
 }
 
