@@ -16,21 +16,22 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
 {
 	int *num_txs = &info->wallets_stats[wallet_id];
 	int alguns_milissegundos = 3;
-	const struct timespec ts = {.tv_sec = 0, .tv_nsec = (long) alguns_milissegundos * 1000};
-	struct transaction *tx = allocate_dynamic_memory(sizeof(struct transaction));
-	if (tx == NULL)
+	const struct timespec ts = {.tv_sec = 0, .tv_nsec = (long)alguns_milissegundos * 1000};
+	struct transaction tx;
+	while (!*info->terminate)
 	{
-		printf("erro: execute_wallet/allocatie_dynamic_memory()");
-	}
-	while(!*info->terminate && *num_txs < info->max_txs/*verificar*/)
-	{
-		if (tx->src_id == wallet_id)
+		wallet_receive_transaction(&tx, wallet_id, info, buffs);
+		if (tx.id != -1)
 		{
-			wallet_receive_transaction(tx, wallet_id, info, buffs);
-			wallet_process_transaction(tx, wallet_id, info);
-			wallet_send_transaction(tx, info, buffs);
+			wallet_process_transaction(&tx, wallet_id, info);
+			wallet_send_transaction(&tx, info, buffs);
+			printf("[Wallet %d] Li a transação %d do buffer e assinei!\n", wallet_id, tx.id);
+			tx.id = -1;
 		}
-		nanosleep(&ts, NULL);
+		else
+		{
+			nanosleep(&ts, NULL);
+		}
 	}
 	return *num_txs;
 }
@@ -41,7 +42,7 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
  */
 void wallet_receive_transaction(struct transaction *tx, int wallet_id, struct info_container *info, struct buffers *buffs)
 {
-	if(tx->src_id == wallet_id && *(info->terminate) != 1)
+	if (*(info->terminate) != 1)
 	{
 		read_main_wallets_buffer(buffs->buff_main_wallets, wallet_id, info->buffers_size, tx);
 	}

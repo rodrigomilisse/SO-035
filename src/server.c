@@ -3,10 +3,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <stdio.h>
-char is_valid_id(struct transaction* tx, struct info_container *info)
-{
-	return  tx->id >= 0 && tx->id < info->max_txs; //TODO
-}
+
 /* Função principal de um servidor. Deve executar um ciclo infinito onde, em
  * cada iteração, lê uma transação do buffer de memória partilhada entre as carteiras e os servidores.
  * Se a transação tiver um id válido e info->terminate ainda for 0, o servidor valida, processa e assina
@@ -18,21 +15,23 @@ char is_valid_id(struct transaction* tx, struct info_container *info)
 int execute_server(int server_id, struct info_container *info, struct buffers *buffs)
 {
 	int *num_txs = &info->servers_stats[server_id];
-	struct transaction *tx = allocate_dynamic_memory(sizeof(struct transaction));
+	struct transaction tx;
 	int alguns_milissegundos = 3;
-	const struct timespec ts = {.tv_sec = 0, .tv_nsec = (long) alguns_milissegundos * 1000};
+	const struct timespec ts = {.tv_sec = 0, .tv_nsec = (long)alguns_milissegundos * 1000};
 
-	if (tx == NULL)
+	while (!*info->terminate)
 	{
-		printf("erro: execute_server/allocatie_dynamic_memory()");
-	}
-	while (!*info->terminate && *num_txs < info->max_txs/*verificar max txs?*/)
-	{
-		if (is_valid_id(tx, info))
+		server_receive_transaction(&tx, info, buffs);
+		if (tx.id != -1)
 		{
-			server_receive_transaction(tx, info, buffs);
-			server_process_transaction(tx, server_id, info);
-			server_send_transaction(tx, info, buffs);
+			server_process_transaction(&tx, server_id, info);
+			printf("[Server %d] Li a transação %d do buffer e esta foi processada corretamente!\n", server_id, tx.id);
+			printf("[Server %d] ledger <- [tx.id %d, src_id %d, dest_id %d, amount %0.2f]\n\n", server_id, tx.id, tx.src_id, tx.dest_id, tx.amount);
+			server_send_transaction(&tx, info, buffs);
+		}
+		else
+		{
+
 			nanosleep(&ts, NULL);
 		}
 	}
@@ -45,7 +44,7 @@ int execute_server(int server_id, struct info_container *info, struct buffers *b
  */
 void server_receive_transaction(struct transaction *tx, struct info_container *info, struct buffers *buffs)
 {
-	if(!*info->terminate)
+	if (!*info->terminate)
 	{
 		read_wallets_servers_buffer(buffs->buff_wallets_servers, info->buffers_size, tx);
 	}
@@ -53,7 +52,7 @@ void server_receive_transaction(struct transaction *tx, struct info_container *i
 
 static char verify_wallet_ids(struct transaction *tx, struct info_container *info)
 {
-	return tx->src_id < info->n_wallets && tx->dest_id < info->n_wallets; //TODO
+	return tx->src_id < info->n_wallets && tx->dest_id < info->n_wallets; // TODO
 }
 static char verify_funds(struct transaction *tx, float *balances)
 {
@@ -79,11 +78,10 @@ static void transfer_funds(struct transaction *tx, float *balances)
  */
 void server_process_transaction(struct transaction *tx, int server_id, struct info_container *info)
 {
-	char transaction_is_valid;
-	int *num_txs = &info->servers_stats[server_id]; 
-	transaction_is_valid = 	verify_wallet_ids(tx, info);
-	transaction_is_valid &=	verify_funds(tx, info->balances);
-	transaction_is_valid &=	verify_wallet_signature(tx);
+	int *num_txs = &info->servers_stats[server_id];
+	char transaction_is_valid = verify_wallet_ids(tx, info);
+	transaction_is_valid &= verify_funds(tx, info->balances);
+	transaction_is_valid &= verify_wallet_signature(tx);
 	if (transaction_is_valid)
 	{
 		transfer_funds(tx, info->balances);
@@ -103,7 +101,7 @@ static char verify_server_signature(struct transaction *tx)
 void server_send_transaction(struct transaction *tx, struct info_container *info, struct buffers *buffs)
 {
 	char is_valid = verify_server_signature(tx);
-	
+
 	if (is_valid)
 	{
 		write_servers_main_buffer(buffs->buff_servers_main, info->buffers_size, tx);

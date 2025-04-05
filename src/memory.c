@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/mman.h>
+#include <string.h>
 
 /* Função que reserva uma zona de memória dinâmica com o tamanho indicado
  * por size, preenche essa zona de memória com o valor 0, e retorna um
@@ -47,7 +48,7 @@ void *create_shared_memory(char *name, int size)
 		printf("erro: create_shared_memory/mmap()\n");
 		return NULL;
 	}
-	printf("successfull shared allocation: %d\n", size);
+	memset(mem_ptr, 0, size);
 	return mem_ptr;
 }
 
@@ -75,7 +76,7 @@ void write_main_wallets_buffer(struct ra_buffer *buffer, int buffer_size, struct
 {
 	for (int i = 0; i < buffer_size; i++)
 	{
-		if(buffer->ptrs[i] == 0)
+		if (buffer->ptrs[i] == 0)
 		{
 			buffer->ptrs[i] = 1;
 			buffer->buffer[i] = *tx;
@@ -133,11 +134,10 @@ void read_main_wallets_buffer(struct ra_buffer *buffer, int wallet_id, int buffe
 {
 	for (int i = 0; i < buffer_size; i++)
 	{
-		if(buffer->ptrs[i] == 1)
+		if (buffer->ptrs[i] == 1 && buffer->buffer[i].src_id == wallet_id)
 		{
 			buffer->ptrs[i] = 0;
 			*tx = buffer->buffer[i];
-			buffer->buffer[i].id = -1;
 			return;
 		}
 	}
@@ -170,12 +170,12 @@ void read_servers_main_buffer(struct ra_buffer *buffer, int tx_id, int buffer_si
 {
 	for (int i = 0; i < buffer_size; i++)
 	{
-		if(buffer->ptrs[i] == 1 && tx->id == tx_id)
+		if (buffer->ptrs[i] && buffer->buffer[i].id == tx_id)
 		{
 			buffer->ptrs[i] = 0;
 			*tx = buffer->buffer[i];
-			buffer->buffer->id = -1;
 			return;
 		}
 	}
+	tx->id = -1;
 }

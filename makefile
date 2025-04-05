@@ -30,6 +30,9 @@ clean:
 re: clean all
 
 run: all
-> 	./$(OUTPUT_DIR)/$(PROGRAM_NAME) 10 2 1 64 5
+> 	./$(OUTPUT_DIR)/$(PROGRAM_NAME) 10 2 1 8 3
 
-.PHONY: all clean re run
+prof:
+>		./$(OUTPUT_DIR)/SOchain_profs 10 2 1 8 3
+
+.PHONY: all clean re run prof
