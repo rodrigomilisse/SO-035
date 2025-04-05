@@ -171,6 +171,10 @@ void user_interaction(struct info_container *info, struct buffers *buffs)
 		{
 			end_execution(info, buffs);
 		}
+		else
+		{
+			printf("[Main] Operação não reconhecida, insira 'help' para assistência.\n\n");
+		}
 		nanosleep(&ts, NULL);
 	}
 }
@@ -241,6 +245,8 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
 {
 	if (info->max_txs == *tx_counter)
 	{
+		int flush_STDIN[3];
+		scanf("%d%d%d", &flush_STDIN[0], &flush_STDIN[1], &flush_STDIN[2]);
 		printf("[Main] O número máximo de transações foi alcançado!\n\n");
 		return;
 	}
