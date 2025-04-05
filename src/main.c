@@ -16,13 +16,24 @@ void main_args(int argc, char *argv[], struct info_container *info)
 	// {
 	// 	printf("%d - %s\n", i, argv[i]);
 	// }
-
-	sscanf(argv[1], "%f", &info->init_balance);
-	sscanf(argv[2], "%d", &info->n_wallets);
-	sscanf(argv[3], "%d", &info->n_servers);
-	sscanf(argv[4], "%d", &info->buffers_size);
-	sscanf(argv[5], "%d", &info->max_txs);
-
+	if (argc != 6)
+	{
+		printf("[Main] Uso: ./SOchain init_balance n_wallets n_servers buff_size max_txs\n"
+				"[Main] Exemplo: ./SOchain 100.0 2 1 5 5\n\n");
+				exit(1);
+	}
+	int args_corretos = 1;
+	args_corretos += sscanf(argv[1], "%f", &info->init_balance);
+	args_corretos += sscanf(argv[2], "%d", &info->n_wallets);
+	args_corretos += sscanf(argv[3], "%d", &info->n_servers);
+	args_corretos += sscanf(argv[4], "%d", &info->buffers_size);
+	args_corretos += sscanf(argv[5], "%d", &info->max_txs);
+	
+	if (args_corretos < 6)
+	{
+		printf("[Main] Parâmetros incorretos! Exemplo de uso: ./SOchain 100.0 2 1 5 5");
+		exit(1);
+	}
 	printf("[Main] Parâmetros corretos!\n\n\n");
 	// printf("initial balance:  %0.2f\n", info->init_balance);
 	// printf("wallet count: ... %d\n", info->n_wallets);
@@ -138,7 +149,7 @@ void create_processes(struct info_container *info, struct buffers *buffs)
 void user_interaction(struct info_container *info, struct buffers *buffs)
 {
 	int tx_counter = 0;
-	int alguns_milissegundos = 5;
+	int alguns_milissegundos = 50;
 	const struct timespec ts = {.tv_sec = 0, .tv_nsec = (long) alguns_milissegundos * 1000000};
 	while (!*info->terminate)
 	{
