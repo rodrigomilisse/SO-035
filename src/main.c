@@ -138,7 +138,7 @@ void create_processes(struct info_container *info, struct buffers *buffs)
 void user_interaction(struct info_container *info, struct buffers *buffs)
 {
 	int tx_counter = 0;
-	int alguns_milissegundos = 3;
+	int alguns_milissegundos = 5;
 	const struct timespec ts = {.tv_sec = 0, .tv_nsec = (long) alguns_milissegundos * 1000000};
 	while (!*info->terminate)
 	{

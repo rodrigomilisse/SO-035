@@ -57,7 +57,7 @@ void server_receive_transaction(struct transaction *tx, struct info_container *i
 
 static char verify_wallet_ids(struct transaction *tx, struct info_container *info)
 {
-	return tx->src_id < info->n_wallets && tx->dest_id < info->n_wallets;
+	return tx->src_id != tx->dest_id && tx->src_id < info->n_wallets && tx->dest_id < info->n_wallets;
 }
 static char verify_funds(struct transaction *tx, float *balances)
 {
