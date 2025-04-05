@@ -12,10 +12,6 @@
  */
 void main_args(int argc, char *argv[], struct info_container *info)
 {
-	// for (int i = 0; i < argc; i++)
-	// {
-	// 	printf("%d - %s\n", i, argv[i]);
-	// }
 	if (argc != 6)
 	{
 		printf("[Main] Uso: ./SOchain init_balance n_wallets n_servers buff_size max_txs\n"
@@ -35,11 +31,6 @@ void main_args(int argc, char *argv[], struct info_container *info)
 		exit(1);
 	}
 	printf("[Main] Parâmetros corretos!\n\n\n");
-	// printf("initial balance:  %0.2f\n", info->init_balance);
-	// printf("wallet count: ... %d\n", info->n_wallets);
-	// printf("server count: ... %d\n", info->n_servers);
-	// printf("buffers size: ... %d\n", info->buffers_size);
-	// printf("max transactions: %d\n", info->max_txs);
 }
 
 /* Função que reserva a memória dinâmica necessária, por exemplo,
