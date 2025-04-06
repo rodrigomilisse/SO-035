@@ -15,8 +15,8 @@ void main_args(int argc, char *argv[], struct info_container *info)
 	if (argc != 6)
 	{
 		printf("[Main] Uso: ./SOchain init_balance n_wallets n_servers buff_size max_txs\n"
-				"[Main] Exemplo: ./SOchain 100.0 2 1 5 5\n\n");
-				exit(1);
+					 "[Main] Exemplo: ./SOchain 100.0 2 1 5 5\n\n");
+		exit(1);
 	}
 	int args_corretos = 1;
 	args_corretos += sscanf(argv[1], "%f", &info->init_balance);
@@ -24,7 +24,7 @@ void main_args(int argc, char *argv[], struct info_container *info)
 	args_corretos += sscanf(argv[3], "%d", &info->n_servers);
 	args_corretos += sscanf(argv[4], "%d", &info->buffers_size);
 	args_corretos += sscanf(argv[5], "%d", &info->max_txs);
-	
+
 	if (args_corretos < 6)
 	{
 		printf("[Main] Parâmetros incorretos! Exemplo de uso: ./SOchain 100.0 2 1 5 5");
@@ -139,9 +139,9 @@ void create_processes(struct info_container *info, struct buffers *buffs)
  */
 void user_interaction(struct info_container *info, struct buffers *buffs)
 {
-	int tx_counter = 0;
+	int tx_counter = -1;
 	int alguns_milissegundos = 50;
-	const struct timespec ts = {.tv_sec = 0, .tv_nsec = (long) alguns_milissegundos * 1000000};
+	const struct timespec ts = {.tv_sec = 0, .tv_nsec = (long)alguns_milissegundos * 1000000};
 	while (!*info->terminate)
 	{
 		char buff[5];
@@ -206,7 +206,7 @@ void end_execution(struct info_container *info, struct buffers *buffs)
 	*info->terminate = 1;
 	wait_processes(info);
 	write_final_statistics(info);
-	(void) buffs;
+	(void)buffs;
 }
 
 /* Aguarda a terminação dos processos filhos previamente criados. Pode usar
@@ -244,20 +244,20 @@ void print_balance(struct info_container *info)
  */
 void create_transaction(int *tx_counter, struct info_container *info, struct buffers *buffs)
 {
-	if (info->max_txs == *tx_counter)
+	if (info->max_txs == *tx_counter + 1)
 	{
 		int flush_STDIN[3];
-		scanf("%d%d%f", &flush_STDIN[0], &flush_STDIN[1], (float*) &flush_STDIN[2]);
+		scanf("%d%d%f", &flush_STDIN[0], &flush_STDIN[1], (float *)&flush_STDIN[2]);
 		printf("[Main] O número máximo de transações foi alcançado!\n\n");
 		return;
 	}
 
 	struct transaction tx = {.wallet_signature = -1, .server_signature = -1};
 	scanf("%d %d %f", &tx.src_id, &tx.dest_id, &tx.amount);
-	tx.id = (*tx_counter)++;
+	tx.id = ++(*tx_counter);
 
-	printf("[Main] A transação %d foi criada para transferir %0.2f SOT da carteira %d para a carteira %d!\n", 
-		tx.id, tx.amount, tx.src_id, tx.dest_id);
+	printf("[Main] A transação %d foi criada para transferir %0.2f SOT da carteira %d para a carteira %d!\n",
+				 tx.id, tx.amount, tx.src_id, tx.dest_id);
 	write_main_wallets_buffer(buffs->buff_main_wallets, info->buffers_size, &tx);
 }
 
@@ -278,8 +278,8 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 	else
 	{
 		printf("[Main] O comprovativo da execução %d foi obtido.\n"
-			"[Main] O comprovativo da transação id %d contém src_id %d, dest_id %d, amount %0.2f e foi assinado pela carteira %d e servidor %d.\n\n", 
-			tx.id, tx.id, tx.src_id, tx.dest_id, tx.amount, tx.wallet_signature, tx.wallet_signature);
+					 "[Main] O comprovativo da transação id %d contém src_id %d, dest_id %d, amount %0.2f e foi assinado pela carteira %d e servidor %d.\n\n",
+					 tx.id, tx.id, tx.src_id, tx.dest_id, tx.amount, tx.wallet_signature, tx.wallet_signature);
 	}
 }
 
@@ -291,35 +291,35 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 void print_stat(int tx_counter, struct info_container *info)
 {
 	printf("- Configuração inicial:\n"
-		"        Propriedade     Valor\n"
-		"        init_balance    %0.2f\n" 
-		"        n_wallets       %d\n" 
-		"        n_servers       %d\n" 
-		"        buffers_size:   %d\n" 
-		"        max_txs         %d\n" 
-		"- Variáveis atuais:\n"
-		"        terminate       %d\n" 
-		"        tx_count:       %d\n"
-		"- Informação sobre as carteiras:\n"
-		"        Carteira        PID             Saldo           Transações Assinadas\n",
-		info->init_balance,
-		info->n_wallets,
-		info->n_servers,
-		info->buffers_size,
-		info->max_txs,
-		*info->terminate,
-		tx_counter);
-	
+				 "        Propriedade     Valor\n"
+				 "        init_balance    %0.2f\n"
+				 "        n_wallets       %d\n"
+				 "        n_servers       %d\n"
+				 "        buffers_size:   %d\n"
+				 "        max_txs         %d\n"
+				 "- Variáveis atuais:\n"
+				 "        terminate       %d\n"
+				 "        tx_count:       %d\n"
+				 "- Informação sobre as carteiras:\n"
+				 "        Carteira        PID             Saldo           Transações Assinadas\n",
+				 info->init_balance,
+				 info->n_wallets,
+				 info->n_servers,
+				 info->buffers_size,
+				 info->max_txs,
+				 *info->terminate,
+				 tx_counter);
+
 	char SOT_str[64];
 
 	for (int i = 0; i < info->n_wallets; i++)
 	{
 		sprintf(SOT_str, "%.2f SOT", info->balances[i]);
 		printf("        %-10d      %-10d      %-15s %d\n",
-						i, info->wallets_pids[i], SOT_str, info->wallets_stats[i]);
+					 i, info->wallets_pids[i], SOT_str, info->wallets_stats[i]);
 	}
 	printf("- Informação sobre os servidores:\n"
-		"        Servidor        PID             Transações Processadas\n");
+				 "        Servidor        PID             Transações Processadas\n");
 	for (int i = 0; i < info->n_servers; i++)
 	{
 		printf("        %-10d      %-10d      %d\n", i, info->servers_pids[i], info->servers_stats[i]);
@@ -332,11 +332,11 @@ void print_stat(int tx_counter, struct info_container *info)
 void help()
 {
 	printf("[Main] Operações disponíveis:\n"
-		"[Main]  bal id - consultar o saldo da carteira identificada por id.\n"
-		"[Main]  trx src_id dest_id amount - criar uma nova transação.\n"
-		"[Main]  rcp id - obter o comprovativo da transação de número id.\n"
-		"[Main]  help - imprime a informação sobre as operações disponíveis.\n"
-		"[Main]  end - termina a execução do SOchain.\n\n");
+				 "[Main]  bal id - consultar o saldo da carteira identificada por id.\n"
+				 "[Main]  trx src_id dest_id amount - criar uma nova transação.\n"
+				 "[Main]  rcp id - obter o comprovativo da transação de número id.\n"
+				 "[Main]  help - imprime a informação sobre as operações disponíveis.\n"
+				 "[Main]  end - termina a execução do SOchain.\n\n");
 }
 
 /* Função principal do SOchain. Inicializa o sistema, chama as funções de alocação
