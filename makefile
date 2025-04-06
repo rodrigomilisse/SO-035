@@ -9,7 +9,7 @@ FLAGS = -Wall -Wextra -Wno-unused-parameter -I$(INC_DIR)
 FLAGS_ENTREGA = -Wall -Wextra -Werror -I$(INC_DIR)
 LIBS = -lm
 CC = gcc
-PROGRAM_NAME = main
+PROGRAM_NAME = SOchain
 OUTPUT_DIR = bin
 
 all: $(PROGRAM_NAME)
