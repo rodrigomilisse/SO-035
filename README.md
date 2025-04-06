@@ -11,8 +11,8 @@
 2. O valor de `tx_counter` começa com o valor -1 para ser consistente com `SOchain_profs`.
 
 ### **Limitações**
-1. **Formatação do Saldo e Transações Assinadas no comando `stat`**: A formatação pode ficar distorcida quando o **Saldo** ou o número de **Transações Assinadas** for muito alto. Considerar ajustes na formatação para suportar grandes valores de forma legível.
-2. **A verificação da validade do `src_id` de uma transação é feita em `verify_wallet_ids(struct transaction *tx, struct info_container *info)` pelo servidor e não pela main, ou seja, o `buff_main_wallets` pode ser preenchido por transações com `src_id` inválidos que nunca serão processadas por qualquer carteira.
+1. **Formatação do Saldo e Transações Assinadas no comando `stat`**: A formatação do comando pode ficar distorcida quando o **Saldo** ou o número de **Transações Assinadas** for muito alto. Considerar ajustes na formatação para suportar grandes valores de forma legível.
+2. **A verificação da validade do `src_id`**: A validade dos campos da transação é feita em `verify_wallet_ids(struct transaction *tx, struct info_container *info)` pelo servidor e não pela main, ou seja, o `buff_main_wallets` pode ser preenchido por transações com `src_id` inválidos que nunca serão processadas por qualquer carteira.
 
 ### **Configarações do `.vscode`**
 ```json
