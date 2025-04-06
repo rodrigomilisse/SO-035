@@ -14,6 +14,9 @@ OUTPUT_DIR = bin
 
 all: $(PROGRAM_NAME)
 
+$(OUTPUT_DIR):
+>	mkdir -p $(OBJ_DIR)
+
 $(OBJ_DIR):
 >   mkdir -p $(OBJ_DIR)
 
