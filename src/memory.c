@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <string.h>
+#include <stdbool.h>
 
 /* Função que reserva uma zona de memória dinâmica com o tamanho indicado
  * por size, preenche essa zona de memória com o valor 0, e retorna um
@@ -85,11 +86,11 @@ void write_main_wallets_buffer(struct ra_buffer *buffer, int buffer_size, struct
 	}
 }
 
-char isFull(struct circ_buffer *buffer, int buffer_size)
+bool isFull(struct circ_buffer *buffer, int buffer_size)
 {
 	return (buffer->ptrs->in + 1) % buffer_size == buffer->ptrs->out;
 }
-char isEmpty(struct circ_buffer *buffer)
+bool isEmpty(struct circ_buffer *buffer)
 {
 	return buffer->ptrs->in == buffer->ptrs->out;
 }

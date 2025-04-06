@@ -48,7 +48,7 @@ void wallet_receive_transaction(struct transaction *tx, int wallet_id, struct in
 	}
 }
 
-static void sign_transaction(struct transaction *tx, int wallet_id)
+static inline void sign_transaction(struct transaction *tx, int wallet_id)
 {
 	tx->wallet_signature = wallet_id;
 }

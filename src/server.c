@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 /* Função principal de um servidor. Deve executar um ciclo infinito onde, em
  * cada iteração, lê uma transação do buffer de memória partilhada entre as carteiras e os servidores.
@@ -55,23 +56,23 @@ void server_receive_transaction(struct transaction *tx, struct info_container *i
 	}
 }
 
-static char verify_wallet_ids(struct transaction *tx, struct info_container *info)
+static inline bool verify_wallet_ids(struct transaction *tx, struct info_container *info)
 {
 	return tx->src_id != tx->dest_id && tx->src_id < info->n_wallets && tx->dest_id < info->n_wallets;
 }
-static char verify_funds(struct transaction *tx, float *balances)
+static inline bool verify_funds(struct transaction *tx, float *balances)
 {
 	return tx->amount <= balances[tx->src_id];
 }
-static char verify_wallet_signature(struct transaction *tx)
+static inline bool verify_wallet_signature(struct transaction *tx)
 {
 	return tx->wallet_signature == tx->src_id;
 }
-static void sign_transaction(struct transaction *tx, int server_id)
+static inline void sign_transaction(struct transaction *tx, int server_id)
 {
 	tx->server_signature = server_id;
 }
-static void transfer_funds(struct transaction *tx, float *balances)
+static inline void transfer_funds(struct transaction *tx, float *balances)
 {
 	balances[tx->src_id] -= tx->amount;
 	balances[tx->dest_id] += tx->amount;
@@ -84,7 +85,7 @@ static void transfer_funds(struct transaction *tx, float *balances)
 void server_process_transaction(struct transaction *tx, int server_id, struct info_container *info)
 {
 	int *num_txs = &info->servers_stats[server_id];
-	char transaction_is_valid = verify_wallet_ids(tx, info);
+	bool transaction_is_valid = verify_wallet_ids(tx, info);
 	transaction_is_valid &= verify_funds(tx, info->balances);
 	transaction_is_valid &= verify_wallet_signature(tx);
 	if (transaction_is_valid)
@@ -95,7 +96,7 @@ void server_process_transaction(struct transaction *tx, int server_id, struct in
 	}
 }
 
-static char verify_server_signature(struct transaction *tx)
+static inline bool verify_server_signature(struct transaction *tx)
 {
 	return tx->server_signature >= 0;
 }
@@ -105,7 +106,7 @@ static char verify_server_signature(struct transaction *tx)
  */
 void server_send_transaction(struct transaction *tx, struct info_container *info, struct buffers *buffs)
 {
-	char is_valid = verify_server_signature(tx);
+	bool is_valid = verify_server_signature(tx);
 
 	if (is_valid)
 	{
