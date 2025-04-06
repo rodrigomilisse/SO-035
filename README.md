@@ -1,6 +1,6 @@
 ## SO-035 – Projeto de Sistemas Operativos
 
-### **Compilação (na raiz do projeto)**
+### **Compilação**
 1. **`make`**: Compila o projeto.
 2. **`make re`**: Recompila o projeto.
 3. **`make run`**: Recompila e executa o programa com argumentos predefinidos no `Makefile`.
