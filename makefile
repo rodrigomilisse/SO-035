@@ -18,7 +18,7 @@ $(OBJ_DIR):
 >   mkdir -p $(OBJ_DIR)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
->   $(CC) $(FLAGS) $(LIBS) -o $@ -c $^
+>   $(CC) $(FLAGS_ENTREGA) $(LIBS) -o $@ -c $^
 
 $(PROGRAM_NAME): $(OBJ_PATHS)
 >   $(CC) $(OBJ_PATHS) -o $(OUTPUT_DIR)/$(PROGRAM_NAME)

@@ -5,7 +5,6 @@
 #include "server.h"
 #include <stdlib.h>
 #include <unistd.h>
-//#include <sys/types.h> 
 #include <sys/wait.h>
 
 /* Função que inicia um novo processo Wallet através da função fork do SO. O novo

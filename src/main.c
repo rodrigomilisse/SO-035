@@ -206,6 +206,7 @@ void end_execution(struct info_container *info, struct buffers *buffs)
 	*info->terminate = 1;
 	wait_processes(info);
 	write_final_statistics(info);
+	(void) buffs;
 }
 
 /* Aguarda a terminação dos processos filhos previamente criados. Pode usar
@@ -253,8 +254,7 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
 
 	struct transaction tx = {.wallet_signature = -1, .server_signature = -1};
 	scanf("%d %d %f", &tx.src_id, &tx.dest_id, &tx.amount);
-	tx.id = *tx_counter;
-	(*tx_counter)++;
+	tx.id = (*tx_counter)++;
 
 	printf("[Main] A transação %d foi criada para transferir %0.2f SOT da carteira %d para a carteira %d!\n", 
 		tx.id, tx.amount, tx.src_id, tx.dest_id);
@@ -310,10 +310,13 @@ void print_stat(int tx_counter, struct info_container *info)
 		*info->terminate,
 		tx_counter);
 	
+	char SOT_str[64];
+
 	for (int i = 0; i < info->n_wallets; i++)
 	{
-		printf("        %d               %d          %5.2f SOT       %d\n",
-						i, info->wallets_pids[i], info->balances[i], info->wallets_stats[i]);
+		sprintf(SOT_str, "%.2f SOT", info->balances[i]);
+		printf("        %-10d      %-10d      %-15s %d\n",
+						i, info->wallets_pids[i], SOT_str, info->wallets_stats[i]);
 	}
 	printf("- Informação sobre os servidores:\n"
 		"        Servidor        PID             Transações Processadas\n");
