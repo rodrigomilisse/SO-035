@@ -12,10 +12,10 @@
 
 ### **Limitações**
 1. **Formatação do Saldo e Transações Assinadas no comando `stat`**: A formatação pode ficar distorcida quando o **Saldo** ou o número de **Transações Assinadas** for muito alto. Considerar ajustes na formatação para suportar grandes valores de forma legível.
-2. **A verificação da validade do `src_id` de uma transação é feita em `verify_wallet_ids(struct transaction *tx, struct info_container *info)` pelo servidor e não pela main, ou seja, o `buff_main_wallets` pode ser preenchido por transações com `src_id` inválidos que nunca serão processador por qualquer carteira.
+2. **A verificação da validade do `src_id` de uma transação é feita em `verify_wallet_ids(struct transaction *tx, struct info_container *info)` pelo servidor e não pela main, ou seja, o `buff_main_wallets` pode ser preenchido por transações com `src_id` inválidos que nunca serão processadas por qualquer carteira.
 
 ### **Configarações do `.vscode`**
-```
+```json
 {
     "configurations": [
         {
