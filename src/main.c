@@ -312,14 +312,14 @@ void print_stat(int tx_counter, struct info_container *info)
 	
 	for (int i = 0; i < info->n_wallets; i++)
 	{
-		printf("        %d               %d           %0.2f SOT       %d\n",
+		printf("        %d               %d          %5.2f SOT       %d\n",
 						i, info->wallets_pids[i], info->balances[i], info->wallets_stats[i]);
 	}
 	printf("- Informação sobre os servidores:\n"
 		"        Servidor        PID             Transações Processadas\n");
 	for (int i = 0; i < info->n_servers; i++)
 	{
-		printf("        %d               %d           %d\n", i, info->servers_pids[i], info->servers_stats[i]);
+		printf("        %-10d      %-10d      %d\n", i, info->servers_pids[i], info->servers_stats[i]);
 	}
 	printf("\n");
 }
