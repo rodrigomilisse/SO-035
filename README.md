@@ -8,7 +8,7 @@
 
 ### **Dúvidas**
 1. **Função `end_execution(struct info_container *info, struct buffers *buffs)`**: O parâmetro `buffs` é explicitamente ignorado, pois não está a ser utilizado na função.
-2. **Valor inicial de `tx_counter`**: O `tx_counter` não começa com o valor `-1` como em SOchain_profs.
+2. **Valor inicial de `tx_counter`**: O `tx_counter` não começa com o valor `-1` como em `SOchain_profs`.
 
 ### **Limitações**
 1. **Formatação do Saldo e Transações Assinadas no comando `stat`**: A formatação pode ficar distorcida quando o **Saldo** ou o número de **Transações Assinadas** for muito alto. Considerar ajustes na formatação para suportar grandes valores de forma legível.
