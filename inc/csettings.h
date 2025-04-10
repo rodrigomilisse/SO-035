@@ -1,0 +1,4 @@
+#ifndef CSETTINGS_H_GUARD
+#define CSETTINGS_H_GUARD
+
+#endif
