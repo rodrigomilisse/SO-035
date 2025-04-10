@@ -1,3 +1,7 @@
+/* Grupo: 35
+ * Membros: Francisco Lima: nº 61864, Marcio Caetano nº -----
+ */
+
 #include "main.h"
 #include "memory.h"
 #include "process.h"

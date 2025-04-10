@@ -1,3 +1,7 @@
+/* Grupo: 35
+ * Membros: Francisco Lima: nº 61864, Marcio Caetano nº -----
+ */
+
 #ifndef CSETTINGS_H_GUARD
 #define CSETTINGS_H_GUARD
 

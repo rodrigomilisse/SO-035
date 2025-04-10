@@ -1,3 +1,7 @@
+# Grupo 35
+# Membros: Francisco Lima nº 61864, Marcio Caetano nº -----
+#
+
 .RECIPEPREFIX = >
 
 OBJ_FILES = main.o memory.o process.o server.o wallet.o
