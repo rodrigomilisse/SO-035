@@ -4,7 +4,7 @@
 
 .RECIPEPREFIX = >
 
-OBJ_FILES = main.o memory.o process.o server.o wallet.o
+OBJ_FILES = main.o memory.o process.o server.o wallet.o csignal.o
 OBJ_PATHS = $(addprefix $(OBJ_DIR)/,$(OBJ_FILES))
 INC_DIR = inc
 SRC_DIR = src
@@ -18,13 +18,16 @@ OUTPUT_DIR = bin
 
 all: $(PROGRAM_NAME)
 
+$(OUTPUT_DIR):
+>	mkdir -p $(OUTPUT_DIR)
+
 $(OBJ_DIR):
 >   mkdir -p $(OBJ_DIR)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
->   $(CC) $(FLAGS_ENTREGA) $(LIBS) -o $@ -c $^
+>   $(CC) $(FLAGS) $(LIBS) -o $@ -c $^
 
-$(PROGRAM_NAME): $(OBJ_PATHS)
+$(PROGRAM_NAME): $(OBJ_PATHS) | $(OUTPUT_DIR)
 >   $(CC) $(OBJ_PATHS) -o $(OUTPUT_DIR)/$(PROGRAM_NAME)
 
 clean:
