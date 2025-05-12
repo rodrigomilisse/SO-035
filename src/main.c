@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
+#include "synchronization.h"
 
 /* Função que lê do stdin com o scanf apropriado para cada tipo de dados
  * e valida os argumentos da aplicação, incluindo o saldo inicial,
@@ -92,6 +93,7 @@ void destroy_dynamic_memory_structs(struct info_container *info, struct buffers 
 {
 	deallocate_dynamic_memory(info->servers_pids);
 	deallocate_dynamic_memory(info->wallets_pids);
+	destroy_semaphores(info->sems);
 
 	deallocate_dynamic_memory(buffs->buff_main_wallets);
 	deallocate_dynamic_memory(buffs->buff_servers_main);
@@ -362,5 +364,8 @@ int main(int argc, char *argv[])
 	// release memory before terminating
 	destroy_shared_memory_structs(info, buffs);
 	destroy_dynamic_memory_structs(info, buffs);
+
+	deallocate_dynamic_memory(info);
+	deallocate_dynamic_memory(buffs);
 	return 0;
 }
