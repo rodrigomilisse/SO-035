@@ -46,7 +46,7 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
  */
 void wallet_receive_transaction(struct transaction *tx, int wallet_id, struct info_container *info, struct buffers *buffs)
 {
-	if (*(info->terminate) != 1)
+	if (!*info->terminate)
 	{
 		read_main_wallets_buffer(buffs->buff_main_wallets, wallet_id, info->buffers_size, tx);
 	}

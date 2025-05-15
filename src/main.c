@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <time.h>
 #include "synchronization.h"
+#include "csignal.h"
 
 /* Função que lê do stdin com o scanf apropriado para cada tipo de dados
  * e valida os argumentos da aplicação, incluindo o saldo inicial,
@@ -175,7 +176,7 @@ void user_interaction(struct info_container *info, struct buffers *buffs)
 		}
 		else if (!strcmp("end", buff))
 		{
-			end_execution(info, buffs);
+			break;
 		}
 		else
 		{
@@ -183,6 +184,7 @@ void user_interaction(struct info_container *info, struct buffers *buffs)
 		}
 		nanosleep(&ts, NULL);
 	}
+	end_execution(info, buffs);
 }
 
 /* Função que imprime as estatísticas finais do SOchain, incluindo
@@ -236,6 +238,10 @@ void wait_processes(struct info_container *info)
  */
 void print_balance(struct info_container *info)
 {
+	if (info->terminate)
+	{
+		return;
+	}
 	int id;
 	scanf("%d", &id);
 	printf("[Main] O saldo da carteira %d é de %0.2f SOT atualmente.\n\n", id, info->balances[id]);
@@ -250,6 +256,10 @@ void print_balance(struct info_container *info)
  */
 void create_transaction(int *tx_counter, struct info_container *info, struct buffers *buffs)
 {
+	if (info->terminate)
+	{
+		return;
+	}
 	if (info->max_txs == *tx_counter + 1)
 	{
 		int flush_STDIN[3];
@@ -273,6 +283,10 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
  */
 void receive_receipt(struct info_container *info, struct buffers *buffs)
 {
+	if (info->terminate)
+	{
+		return;
+	}
 	int id;
 	scanf("%d", &id);
 	struct transaction tx;
@@ -360,6 +374,9 @@ int main(int argc, char *argv[])
 	create_dynamic_memory_structs(info, buffs);
 	create_shared_memory_structs(info, buffs);
 	create_processes(info, buffs);
+	create_all_semaphores(info->buffers_size); // TODO mudar quando a main estiver correta
+	init_signal_handler(info->terminate);
+
 	user_interaction(info, buffs);
 	// release memory before terminating
 	destroy_shared_memory_structs(info, buffs);
