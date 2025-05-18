@@ -273,8 +273,8 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
 	tx.id = ++(*tx_counter);
 
 	// SEND
-	sem_wait(&info->sems->main_wallet->free_space);
-	sem_wait(&info->sems->main_wallet->mutex);
+	sem_wait(info->sems->main_wallet->free_space);
+	sem_wait(info->sems->main_wallet->mutex);
 
 	write_main_wallets_buffer(buffs->buff_main_wallets, info->buffers_size, &tx);
 
@@ -300,13 +300,13 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 	struct transaction tx;
 
 	// RECEIVE
-	sem_wait(&info->sems->server_main->unread);
-	sem_wait(&info->sems->server_main->mutex);
+	sem_wait(info->sems->server_main->unread);
+	sem_wait(info->sems->server_main->mutex);
 
 	read_servers_main_buffer(buffs->buff_servers_main, id, info->buffers_size, &tx);
 
-	sem_post(&info->sems->server_main->mutex);
-	sem_post(&info->sems->server_main->free_space);
+	sem_post(info->sems->server_main->mutex);
+	sem_post(info->sems->server_main->free_space);
 
 	// PRINT
 	if (tx.id == -1)
