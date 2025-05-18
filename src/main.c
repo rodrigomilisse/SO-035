@@ -272,9 +272,17 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
 	scanf("%d %d %f", &tx.src_id, &tx.dest_id, &tx.amount);
 	tx.id = ++(*tx_counter);
 
+	// SEND
+	sem_wait(&info->sems->main_wallet->free_space);
+	sem_wait(&info->sems->main_wallet->mutex);
+
+	write_main_wallets_buffer(buffs->buff_main_wallets, info->buffers_size, &tx);
+
+	sem_post(info->sems->main_wallet->mutex);
+	sem_post(info->sems->main_wallet->unread);
+
 	printf("[Main] A transação %d foi criada para transferir %0.2f SOT da carteira %d para a carteira %d!\n",
 		   tx.id, tx.amount, tx.src_id, tx.dest_id);
-	write_main_wallets_buffer(buffs->buff_main_wallets, info->buffers_size, &tx);
 }
 
 /* Tenta ler o recibo da transação (identificada por id, o qual ainda está no
@@ -290,7 +298,17 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 	int id;
 	scanf("%d", &id);
 	struct transaction tx;
+
+	// RECEIVE
+	sem_wait(&info->sems->server_main->unread);
+	sem_wait(&info->sems->server_main->mutex);
+
 	read_servers_main_buffer(buffs->buff_servers_main, id, info->buffers_size, &tx);
+
+	sem_post(&info->sems->server_main->mutex);
+	sem_post(&info->sems->server_main->free_space);
+
+	// PRINT
 	if (tx.id == -1)
 	{
 		printf("[Main] O comprovativo da execução da transação %d não está disponível.\n\n", tx.id);

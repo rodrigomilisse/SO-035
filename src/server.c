@@ -8,6 +8,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include "synchronization.h"
 
 /* Função principal de um servidor. Deve executar um ciclo infinito onde, em
  * cada iteração, lê uma transação do buffer de memória partilhada entre as carteiras e os servidores.
@@ -26,14 +27,34 @@ int execute_server(int server_id, struct info_container *info, struct buffers *b
 
 	while (!*info->terminate)
 	{
+		// RECEIVE
+		wait_sem(&info->sems->wallet_server->unread);
+		wait_sem(&info->sems->wallet_server->mutex);
+
 		server_receive_transaction(&tx, info, buffs);
+
+		wait_sem(&info->sems->wallet_server->mutex);
+		wait_sem(&info->sems->wallet_server->free_space);
+
+		// PROCESS
 		if (tx.id == -1)
 		{
 			nanosleep(&ts, NULL);
 			continue;
 		}
+
 		server_process_transaction(&tx, server_id, info);
+
+		// SEND
+		sem_wait(&info->sems->server_main->free_space);
+		sem_wait(&info->sems->server_main->mutex);
+
 		server_send_transaction(&tx, info, buffs);
+
+		sem_post(&info->sems->server_main->mutex);
+		sem_post(&info->sems->server_main->unread);
+
+		// PRINT
 		if (tx.server_signature != -1)
 		{
 			printf("[Server %d] Li a transação %d do buffer e esta foi processada corretamente!\n"

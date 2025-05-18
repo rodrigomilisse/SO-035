@@ -8,6 +8,7 @@
 #include "server.h"
 #include <time.h>
 #include <stdio.h>
+#include "synchronization.h"
 
 /* Função principal de uma carteira. Deve executar um ciclo infinito onde,
  * em cada iteração, lê uma transação da main apenas caso o src_id da transação seja
@@ -24,18 +25,35 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
 	struct transaction tx;
 	while (!*info->terminate)
 	{
+		// RECEIVE
+		sem_wait(info->sems->main_wallet->unread);
+		sem_wait(info->sems->wallet_server->mutex);
+
 		wallet_receive_transaction(&tx, wallet_id, info, buffs);
+
+		sem_post(info->sems->wallet_server->mutex);
+		sem_post(info->sems->wallet_server->free_space);
+
+		// PROCESS
 		if (tx.id != -1)
 		{
-			wallet_process_transaction(&tx, wallet_id, info);
-			wallet_send_transaction(&tx, info, buffs);
-			printf("[Wallet %d] Li a transação %d do buffer e a assinei!\n", wallet_id, tx.id);
-			tx.id = -1;
-		}
-		else
-		{
 			nanosleep(&ts, NULL);
+			continue;
 		}
+
+		wallet_process_transaction(&tx, wallet_id, info);
+
+		// SEND
+		sem_wait(info->sems->wallet_server->free_space);
+		sem_wait(info->sems->wallet_server->mutex);
+
+		wallet_send_transaction(&tx, info, buffs);
+
+		sem_post(info->sems->wallet_server->mutex);
+		sem_post(info->sems->wallet_server->unread);
+
+		// PRINT
+		printf("[Wallet %d] Li a transação %d do buffer e a assinei!\n", wallet_id, tx.id);
 	}
 	return *num_txs;
 }
