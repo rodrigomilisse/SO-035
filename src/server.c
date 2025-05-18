@@ -26,13 +26,13 @@ int execute_server(int server_id, struct info_container *info, struct buffers *b
 	while (!*info->terminate)
 	{
 		// RECEIVE
-		wait_sem(info->sems->wallet_server->unread);
-		wait_sem(info->sems->wallet_server->mutex);
+		sem_wait(info->sems->wallet_server->unread);
+		sem_wait(info->sems->wallet_server->mutex);
 
 		server_receive_transaction(&tx, info, buffs);
 
-		wait_sem(info->sems->wallet_server->mutex);
-		wait_sem(info->sems->wallet_server->free_space);
+		sem_post(info->sems->wallet_server->mutex);
+		sem_post(info->sems->wallet_server->free_space);
 
 		// PROCESS
 		if (tx.id == -1)

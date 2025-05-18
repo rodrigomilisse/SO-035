@@ -8,19 +8,21 @@
 #include <fcntl.h>	   /* For O_* constants */
 #include <sys/stat.h>  /* For mode constants */
 
-#define MAIN_WALLET_SEM_NAME "main_wallet"
-#define WALLET_SERVER_SEM_NAME "wallet_server"
-#define SERVER_MAIN_SEM_NAME "server_main"
+#define SEMS_NAME "sems"
+#define MAIN_WALLET_SEM_NAME "/main_wallet"
+#define WALLET_SERVER_SEM_NAME "/wallet_server"
+#define SERVER_MAIN_SEM_NAME "/server_main"
 #define UNREAD_SUFFIX "_unread"
 #define FREE_SPACE_SUFFIX "_free_space"
 #define MUTEX_SUFFIX "_mutex"
-#define TERMINATE_MUTEX_NAME "terminate_mutex"
+#define TERMINATE_MUTEX_NAME "/terminate_mutex"
 
-#define TERMINATE_MUTEX_SEM_NAME "terminate_mutex"
+#define TERMINATE_MUTEX_SEM_NAME "/terminate_sem_mutex"
 
 /* Função que cria *um* semaforo , inicializado a <value> */
 sem_t *create_semaphore(char *name, unsigned v)
 {
+	sem_unlink(name);
 	return sem_open(name, O_CREAT | O_EXCL, 0644, v);
 }
 
@@ -34,12 +36,12 @@ void destroy_semaphore(char *name, sem_t *sem)
 /* Função que cria *todos* os semaforos do programa, inicializando a <v> os semaforos free_space */
 struct semaphores *create_all_semaphores(unsigned v)
 {
-	struct semaphores *sems = allocate_dynamic_memory(sizeof(struct semaphores *));
+	struct semaphores *sems = create_shared_memory(SEMS_NAME, sizeof(struct semaphores));
 
 	sems->main_wallet = create_main_wallet_sems(v);
 	sems->wallet_server = create_wallet_server_sems(v);
 	sems->server_main = create_server_main_sems(v);
-	sems->terminate_mutex = create_semaphore(TERMINATE_MUTEX_NAME, v);
+	sems->terminate_mutex = create_semaphore(TERMINATE_MUTEX_NAME, 1);
 	return sems;
 }
 
@@ -52,11 +54,23 @@ void print_semaphores(struct semaphores *sems)
 /* Função que destroi *todos* os semaforos na estrutura <sems> */
 void destroy_semaphores(struct semaphores *sems)
 {
-	destroy_semaphore(sems->main_wallet, MAIN_WALLET_SEM_NAME);
-	destroy_semaphore(sems->wallet_server, WALLET_SERVER_SEM_NAME);
-	destroy_semaphore(sems->server_main, SERVER_MAIN_SEM_NAME);
+	destroy_semaphore(MAIN_WALLET_SEM_NAME FREE_SPACE_SUFFIX, sems->main_wallet->free_space);
+	destroy_semaphore(MAIN_WALLET_SEM_NAME UNREAD_SUFFIX, sems->main_wallet->unread);
+	destroy_semaphore(MAIN_WALLET_SEM_NAME MUTEX_SUFFIX, sems->main_wallet->mutex);
 
-	destroy_semaphore(sems->terminate_mutex, TERMINATE_MUTEX_SEM_NAME);
+	destroy_semaphore(WALLET_SERVER_SEM_NAME FREE_SPACE_SUFFIX, sems->wallet_server->free_space);
+	destroy_semaphore(WALLET_SERVER_SEM_NAME UNREAD_SUFFIX, sems->wallet_server->unread);
+	destroy_semaphore(WALLET_SERVER_SEM_NAME MUTEX_SUFFIX, sems->wallet_server->mutex);
+
+	destroy_semaphore(SERVER_MAIN_SEM_NAME FREE_SPACE_SUFFIX, sems->server_main->free_space);
+	destroy_semaphore(SERVER_MAIN_SEM_NAME UNREAD_SUFFIX, sems->server_main->unread);
+	destroy_semaphore(SERVER_MAIN_SEM_NAME MUTEX_SUFFIX, sems->server_main->mutex);
+
+	destroy_shared_memory(SEMS_NAME SEMS_NAME, sems->main_wallet, sizeof(sems->main_wallet));
+	destroy_shared_memory(SEMS_NAME SEMS_NAME, sems->wallet_server, sizeof(sems->wallet_server));
+	destroy_shared_memory(SEMS_NAME SEMS_NAME, sems->server_main, sizeof(sems->server_main));
+
+	destroy_semaphore(TERMINATE_MUTEX_SEM_NAME, sems->terminate_mutex);
 }
 
 /* função genérica que cria 3 semaforos usados na lógica Produtor-Consumidor
@@ -66,12 +80,11 @@ Retorna: um pointer para a estrutura que contem 3 semaforos. */
 struct triplet_sems *create_triplet_sems(
 	unsigned v, char *freespace_name1, char *unread_name, char *mutex_name)
 {
-	struct triplet_sems *trip_sems = allocate_dynamic_memory(
-		sizeof(struct sem_t *) * 3);
+	struct triplet_sems *trip_sems = create_shared_memory(SEMS_NAME SEMS_NAME, sizeof(struct triplet_sems));
 
-	trip_sems->unread = create_semaphore(unread_name, v);
+	trip_sems->unread = create_semaphore(unread_name, 0);
 	trip_sems->free_space = create_semaphore(freespace_name1, v);
-	trip_sems->mutex = create_semaphore(mutex_name, v);
+	trip_sems->mutex = create_semaphore(mutex_name, 1);
 
 	return trip_sems;
 }

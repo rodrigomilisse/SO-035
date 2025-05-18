@@ -75,7 +75,9 @@ void create_shared_memory_structs(struct info_container *info, struct buffers *b
 	info->wallets_stats = create_shared_memory(ID_SHM_WALLETS_STATS, sizeof(int) * info->n_wallets);
 	info->servers_stats = create_shared_memory(ID_SHM_SERVERS_STATS, sizeof(int) * info->n_servers);
 
-	info->terminate = create_shared_memory(ID_SHM_TERMINATE, sizeof(int) * 1);
+	info->terminate = create_shared_memory(ID_SHM_TERMINATE, sizeof(int));
+
+	info->sems = create_all_semaphores(info->buffers_size);
 
 	buffs->buff_main_wallets->buffer = create_shared_memory(ID_SHM_MAIN_WALLETS_BUFFER, sizeof(struct transaction) * info->buffers_size);
 	buffs->buff_main_wallets->ptrs = create_shared_memory(ID_SHM_MAIN_WALLETS_PTR, sizeof(int) * info->buffers_size);
@@ -94,7 +96,6 @@ void destroy_dynamic_memory_structs(struct info_container *info, struct buffers 
 {
 	deallocate_dynamic_memory(info->servers_pids);
 	deallocate_dynamic_memory(info->wallets_pids);
-	destroy_semaphores(info->sems);
 
 	deallocate_dynamic_memory(buffs->buff_main_wallets);
 	deallocate_dynamic_memory(buffs->buff_servers_main);
@@ -112,6 +113,8 @@ void destroy_shared_memory_structs(struct info_container *info, struct buffers *
 	destroy_shared_memory(ID_SHM_SERVERS_STATS, info->servers_stats, sizeof(int) * info->n_servers);
 
 	destroy_shared_memory(ID_SHM_TERMINATE, info->terminate, sizeof(int) * 1);
+
+	destroy_semaphores(info->sems);
 
 	destroy_shared_memory(ID_SHM_MAIN_WALLETS_BUFFER, buffs->buff_main_wallets->buffer, sizeof(struct transaction) * info->buffers_size);
 	destroy_shared_memory(ID_SHM_MAIN_WALLETS_PTR, buffs->buff_main_wallets->ptrs, sizeof(int) * info->buffers_size);
@@ -392,9 +395,7 @@ int main(int argc, char *argv[])
 	create_dynamic_memory_structs(info, buffs);
 	create_shared_memory_structs(info, buffs);
 	create_processes(info, buffs);
-	create_all_semaphores(info->buffers_size); // TODO mudar quando a main estiver correta
-	init_signal_handler(info->terminate);
-
+	// init_signal_handler(info->terminate);
 	user_interaction(info, buffs);
 	// release memory before terminating
 	destroy_shared_memory_structs(info, buffs);
