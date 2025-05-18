@@ -22,8 +22,6 @@ int execute_server(int server_id, struct info_container *info, struct buffers *b
 {
 	int *num_txs = &info->servers_stats[server_id];
 	struct transaction tx;
-	int alguns_milissegundos = 3;
-	const struct timespec ts = {.tv_sec = 0, .tv_nsec = (long)alguns_milissegundos * 1000000};
 
 	while (!*info->terminate)
 	{
@@ -39,7 +37,6 @@ int execute_server(int server_id, struct info_container *info, struct buffers *b
 		// PROCESS
 		if (tx.id == -1)
 		{
-			nanosleep(&ts, NULL);
 			continue;
 		}
 

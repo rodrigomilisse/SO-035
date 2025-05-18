@@ -20,8 +20,6 @@
 int execute_wallet(int wallet_id, struct info_container *info, struct buffers *buffs)
 {
 	int *num_txs = &info->wallets_stats[wallet_id];
-	int alguns_milissegundos = 3;
-	const struct timespec ts = {.tv_sec = 0, .tv_nsec = (long)alguns_milissegundos * 1000000};
 	struct transaction tx;
 	while (!*info->terminate)
 	{
@@ -37,7 +35,6 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
 		// PROCESS
 		if (tx.id != -1)
 		{
-			nanosleep(&ts, NULL);
 			continue;
 		}
 
