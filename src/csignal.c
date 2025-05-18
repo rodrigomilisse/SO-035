@@ -10,13 +10,15 @@
 void init_signal_handler(int *terminate_ptr)
 {
 	TERMINATE = terminate_ptr;
-	sa_SIGINT->sa_handler = &interrupt_handler;
-	sigemptyset(&sa_SIGINT->sa_mask);
-	sigaddset(&sa_SIGINT->sa_mask, SIGINT);
-	sigaction(SIGINT, sa_SIGINT, 0);
+	sa_SIGINT.sa_handler = &interrupt_handler;
+	sigemptyset(&sa_SIGINT.sa_mask);
+	sigaddset(&sa_SIGINT.sa_mask, SIGINT);
+	sigaction(SIGINT, &sa_SIGINT, 0);
 }
 
-void interrupt_handler(int)
+void interrupt_handler(int signum)
 {
 	*TERMINATE = 1;
+
+	(void)signum;
 }

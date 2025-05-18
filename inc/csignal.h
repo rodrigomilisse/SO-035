@@ -8,11 +8,11 @@
 #define _POSIX_C_SOURCE 200809L // TODO necessario?
 #include <signal.h>
 
-int *TERMINATE;
+extern int *TERMINATE;
 
-struct sigaction *sa_SIGINT;
+extern struct sigaction sa_SIGINT;
 
-void init_terminate(int *terminate_ptr);
+void init_signal_handler(int *terminate_ptr);
 
 void interrupt_handler(int);
 

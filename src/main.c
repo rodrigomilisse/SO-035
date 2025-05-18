@@ -238,7 +238,7 @@ void wait_processes(struct info_container *info)
  */
 void print_balance(struct info_container *info)
 {
-	if (info->terminate)
+	if (*info->terminate)
 	{
 		return;
 	}
@@ -256,7 +256,7 @@ void print_balance(struct info_container *info)
  */
 void create_transaction(int *tx_counter, struct info_container *info, struct buffers *buffs)
 {
-	if (info->terminate)
+	if (*info->terminate)
 	{
 		return;
 	}
@@ -291,7 +291,7 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
  */
 void receive_receipt(struct info_container *info, struct buffers *buffs)
 {
-	if (info->terminate)
+	if (*info->terminate)
 	{
 		return;
 	}
