@@ -2,11 +2,11 @@
  * Membros: Francisco Lima: nº 61864, Márcio Caetano nº 61799
  */
 
-#include "clog.h"
-#include <stdio.h>
 #include <stdlib.h>
-#include "csettings.h"
 
+#include <stdio.h>
+#include "csettings.h"
+#include "clog.h"
 #include "ctime.h"
 
 void log(char *message)
@@ -17,6 +17,8 @@ void log(char *message)
 		perror("Error opening log file");
 		return;
 	}
-	fprintf(file, "%s %s\n", get_timestamp(), message);
+	char *time = get_timestamp();
+	fprintf(file, "%s %s\n", time, message);
+	free(time);
 	fclose(file);
 }

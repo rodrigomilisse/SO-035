@@ -14,39 +14,15 @@ int init_settings(char *filename)
 {
 	// printf("Initializing settings... %s\n", filename);
 	FILE *file = fopen(filename, "r");
-	if (file == NULL)
+
+	if (fscanf(file, "%s %s %d", settings.log_file, settings.stats_file, &settings.period) != 3)
 	{
-		perror("Error opening file");
-		return 1;
-	}
-	char line[64];
-	if (fgets(line, sizeof(line), file) != NULL)
-	{
-		sscanf(line, "%s", &settings.log_file);
-	}
-	else
-	{
-		perror("Error reading line");
+		perror("Error reading settings");
 		fclose(file);
 		return 1;
 	}
-	if (fgets(line, sizeof(line), file) != NULL)
 	{
-		sscanf(line, "%s", &settings.stats_file);
-	}
-	else
-	{
-		perror("Error reading line");
-		fclose(file);
-		return 1;
-	}
-	if (fgets(line, sizeof(line), file) != NULL)
-	{
-		sscanf(line, "%d", &settings.period);
-	}
-	else
-	{
-		perror("Error reading line");
+		perror("Error reading settings");
 		fclose(file);
 		return 1;
 	}
@@ -63,57 +39,13 @@ int init_args(struct info_container *info, char *filename)
 		perror("Error opening file");
 		return 1;
 	}
-	char line[64];
-	if (fgets(line, sizeof(line), file) != NULL)
+	if (fscanf(file, "%f %d %d %d %d", &info->init_balance, &info->n_wallets, &info->n_servers, &info->buffers_size, &info->max_txs) != 5)
 	{
-		sscanf(line, "%f", &info->init_balance);
-	}
-	else
-	{
-		perror("Error reading line");
+		perror("Error reading settings");
 		fclose(file);
 		return 1;
 	}
-	if (fgets(line, sizeof(line), file) != NULL)
-	{
-		sscanf(line, "%d", &info->n_wallets);
-	}
-	else
-	{
-		perror("Error reading line");
-		fclose(file);
-		return 1;
-	}
-	if (fgets(line, sizeof(line), file) != NULL)
-	{
-		sscanf(line, "%d", &info->n_servers);
-	}
-	else
-	{
-		perror("Error reading line");
-		fclose(file);
-		return 1;
-	}
-	if (fgets(line, sizeof(line), file) != NULL)
-	{
-		sscanf(line, "%d", &info->buffers_size);
-	}
-	else
-	{
-		perror("Error reading line");
-		fclose(file);
-		return 1;
-	}
-	if (fgets(line, sizeof(line), file) != NULL)
-	{
-		sscanf(line, "%d", &info->max_txs);
-	}
-	else
-	{
-		perror("Error reading line");
-		fclose(file);
-		return 1;
-	}
+
 	fclose(file);
 	return 0;
 }
