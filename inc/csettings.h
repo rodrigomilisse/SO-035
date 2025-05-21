@@ -7,7 +7,16 @@
 
 #include "main.h"
 
+struct settings
+{
+	char *log_file;
+	char *stats_file;
+	int period;
+};
+
 int init_settings(char *filename);
 int init_args(struct info_container *info, char *filename);
+
+struct settings *get_settings();
 
 #endif

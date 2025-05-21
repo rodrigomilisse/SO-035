@@ -7,12 +7,13 @@
 
 #include "cstats.h"
 #include "main.h"
+#include "csettings.h"
 
 void write_stats(struct info_container *info, struct buffers *buffs)
 {
 	// printf("Writing stats...\n");
 	FILE *fp;
-	fp = fopen("stats.txt", "w");
+	fp = fopen(get_settings()->stats_file, "w");
 	if (fp == NULL)
 	{
 		perror("Error opening file");

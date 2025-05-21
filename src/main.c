@@ -162,7 +162,11 @@ void user_interaction(struct info_container *info, struct buffers *buffs)
 		char buff[5];
 		printf("[Main] Introduzir operação: ");
 		scanf("%s", buff);
-		if (!strcmp("bal", buff))
+		if (*info->terminate)
+		{
+			return;
+		}
+		else if (!strcmp("bal", buff))
 		{
 			print_balance(info);
 		}
@@ -252,10 +256,6 @@ void wait_processes(struct info_container *info)
  */
 void print_balance(struct info_container *info)
 {
-	if (*info->terminate)
-	{
-		return;
-	}
 	int id;
 	scanf("%d", &id);
 	printf("[Main] O saldo da carteira %d é de %0.2f SOT atualmente.\n\n", id, info->balances[id]);
@@ -270,10 +270,6 @@ void print_balance(struct info_container *info)
  */
 void create_transaction(int *tx_counter, struct info_container *info, struct buffers *buffs)
 {
-	if (*info->terminate)
-	{
-		return;
-	}
 	if (info->max_txs == *tx_counter + 1)
 	{
 		int flush_STDIN[3];
@@ -289,9 +285,7 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
 
 	// SEND
 	sem_wait(info->sems->main_wallet->free_space);
-	printf("Main Wallet Free Waited\n");
 	sem_wait(info->sems->main_wallet->mutex);
-	printf("Main Wallet Editing\n");
 
 	if (*info->terminate)
 	{
@@ -314,10 +308,6 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
  */
 void receive_receipt(struct info_container *info, struct buffers *buffs)
 {
-	if (*info->terminate)
-	{
-		return;
-	}
 	int id;
 	scanf("%d", &id); // TODO STUCK
 	struct transaction tx;

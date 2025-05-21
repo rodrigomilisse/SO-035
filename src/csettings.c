@@ -8,6 +8,8 @@
 #include "csettings.h"
 #include "main.h"
 
+static struct settings settings;
+
 int init_settings(char *filename)
 {
 	// printf("Initializing settings... %s\n", filename);
@@ -20,7 +22,7 @@ int init_settings(char *filename)
 	char line[64];
 	if (fgets(line, sizeof(line), file) != NULL)
 	{
-		printf("Read line: %s\n", line);
+		sscanf(line, "%s", &settings.log_file);
 	}
 	else
 	{
@@ -30,7 +32,7 @@ int init_settings(char *filename)
 	}
 	if (fgets(line, sizeof(line), file) != NULL)
 	{
-		printf("Read line: %s\n", line);
+		sscanf(line, "%s", &settings.stats_file);
 	}
 	else
 	{
@@ -40,7 +42,7 @@ int init_settings(char *filename)
 	}
 	if (fgets(line, sizeof(line), file) != NULL)
 	{
-		printf("Read line: %s\n", line);
+		sscanf(line, "%d", &settings.period);
 	}
 	else
 	{
@@ -114,4 +116,9 @@ int init_args(struct info_container *info, char *filename)
 	}
 	fclose(file);
 	return 0;
+}
+
+struct settings *get_settings()
+{
+	return &settings;
 }
