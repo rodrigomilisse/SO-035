@@ -7,17 +7,7 @@
 #include <semaphore.h> //sem_t
 #include <fcntl.h>	   /* For O_* constants */
 #include <sys/stat.h>  /* For mode constants */
-
-#define SEMS_NAME "sems"
-#define MAIN_WALLET_SEM_NAME "/main_wallet"
-#define WALLET_SERVER_SEM_NAME "/wallet_server"
-#define SERVER_MAIN_SEM_NAME "/server_main"
-#define UNREAD_SUFFIX "_unread"
-#define FREE_SPACE_SUFFIX "_free_space"
-#define MUTEX_SUFFIX "_mutex"
-#define TERMINATE_MUTEX_NAME "/terminate_mutex"
-
-#define TERMINATE_MUTEX_SEM_NAME "/terminate_sem_mutex"
+#include "private.h"
 
 /* Função que cria *um* semaforo , inicializado a <value> */
 sem_t *create_semaphore(char *name, unsigned v)
@@ -48,7 +38,21 @@ struct semaphores *create_all_semaphores(unsigned v)
 /* Imprimir o valor de *todos* os semaforos em <sems> */
 void print_semaphores(struct semaphores *sems)
 {
-	// TODO
+	sem_print(sems->main_wallet->unread, MAIN_WALLET_SEM_NAME UNREAD_SUFFIX);
+	sem_print(sems->main_wallet->free_space, MAIN_WALLET_SEM_NAME FREE_SPACE_SUFFIX);
+	sem_print(sems->main_wallet->mutex, MAIN_WALLET_SEM_NAME MUTEX_SUFFIX);
+
+	sem_print(sems->wallet_server->unread, WALLET_SERVER_SEM_NAME UNREAD_SUFFIX);
+	sem_print(sems->wallet_server->free_space, WALLET_SERVER_SEM_NAME FREE_SPACE_SUFFIX);
+	sem_print(sems->wallet_server->mutex, WALLET_SERVER_SEM_NAME MUTEX_SUFFIX);
+
+	sem_print(sems->server_main->unread, SERVER_MAIN_SEM_NAME UNREAD_SUFFIX);
+	sem_print(sems->server_main->free_space, SERVER_MAIN_SEM_NAME FREE_SPACE_SUFFIX);
+	sem_print(sems->server_main->mutex, SERVER_MAIN_SEM_NAME MUTEX_SUFFIX);
+
+	sem_print(sems->terminate_mutex, TERMINATE_MUTEX_NAME);
+
+	printf("\n\n");
 }
 
 /* Função que destroi *todos* os semaforos na estrutura <sems> */
@@ -66,9 +70,9 @@ void destroy_semaphores(struct semaphores *sems)
 	destroy_semaphore(SERVER_MAIN_SEM_NAME UNREAD_SUFFIX, sems->server_main->unread);
 	destroy_semaphore(SERVER_MAIN_SEM_NAME MUTEX_SUFFIX, sems->server_main->mutex);
 
-	destroy_shared_memory(SEMS_NAME SEMS_NAME, sems->main_wallet, sizeof(sems->main_wallet));
-	destroy_shared_memory(SEMS_NAME SEMS_NAME, sems->wallet_server, sizeof(sems->wallet_server));
-	destroy_shared_memory(SEMS_NAME SEMS_NAME, sems->server_main, sizeof(sems->server_main));
+	destroy_shared_memory(MAIN_WALLET_SEM_NAME MUTEX_SUFFIX SEMS_NAME, sems->main_wallet, sizeof(sems->main_wallet));
+	destroy_shared_memory(WALLET_SERVER_SEM_NAME MUTEX_SUFFIX SEMS_NAME, sems->wallet_server, sizeof(sems->wallet_server));
+	destroy_shared_memory(SERVER_MAIN_SEM_NAME MUTEX_SUFFIX SEMS_NAME, sems->server_main, sizeof(sems->server_main));
 
 	destroy_semaphore(TERMINATE_MUTEX_SEM_NAME, sems->terminate_mutex);
 }
@@ -80,7 +84,11 @@ Retorna: um pointer para a estrutura que contem 3 semaforos. */
 struct triplet_sems *create_triplet_sems(
 	unsigned v, char *freespace_name1, char *unread_name, char *mutex_name)
 {
-	struct triplet_sems *trip_sems = create_shared_memory(SEMS_NAME SEMS_NAME, sizeof(struct triplet_sems));
+	char *name = malloc(strlen(mutex_name) + strlen(SEMS_NAME));
+	strcat(name, mutex_name);
+	strcat(name, SEMS_NAME);
+
+	struct triplet_sems *trip_sems = create_shared_memory(name, sizeof(struct triplet_sems));
 
 	trip_sems->unread = create_semaphore(unread_name, 0);
 	trip_sems->free_space = create_semaphore(freespace_name1, v);

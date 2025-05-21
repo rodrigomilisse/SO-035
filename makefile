@@ -4,7 +4,7 @@
 
 .RECIPEPREFIX = >
 
-OBJ_FILES = main.o memory.o process.o server.o wallet.o csignal.o clog.o csettings.o cstats.o ctime.o synchronization.o
+OBJ_FILES = main.o memory.o process.o server.o wallet.o csignal.o clog.o csettings.o cstats.o ctime.o synchronization.o private.o
 OBJ_PATHS = $(addprefix $(OBJ_DIR)/,$(OBJ_FILES))
 INC_DIR = inc
 SRC_DIR = src
@@ -37,10 +37,11 @@ clean:
 re: clean all
 
 run: all
->	# ./$(OUTPUT_DIR)/$(PROGRAM_NAME) args.txt setting.txt
->	./$(OUTPUT_DIR)/$(PROGRAM_NAME) $(shell cat args.txt)
+> clear
+>	./$(OUTPUT_DIR)/$(PROGRAM_NAME) args.txt settings.txt
 
 prof:
 >		./$(OUTPUT_DIR)/SOchain_profs 10 2 1 8 3
 
 .PHONY: all clean re run prof
+

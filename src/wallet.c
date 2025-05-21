@@ -9,6 +9,7 @@
 #include <time.h>
 #include <stdio.h>
 #include "synchronization.h"
+#include "private.h"
 
 /* Função principal de uma carteira. Deve executar um ciclo infinito onde,
  * em cada iteração, lê uma transação da main apenas caso o src_id da transação seja
@@ -23,20 +24,30 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
 	struct transaction tx;
 	while (!*info->terminate)
 	{
-		// RECEIVE
-		sem_wait(info->sems->main_wallet->unread);
-		sem_wait(info->sems->wallet_server->mutex);
 
+		// RECEIVE
+
+		sem_print(info->sems->main_wallet->unread, MAIN_WALLET_SEM_NAME UNREAD_SUFFIX);
+		sem_wait(info->sems->main_wallet->unread);
+		sem_wait(info->sems->main_wallet->mutex);
+
+		if (*info->terminate)
+		{
+			break;
+		}
 		wallet_receive_transaction(&tx, wallet_id, info, buffs);
 
-		sem_post(info->sems->wallet_server->mutex);
-		sem_post(info->sems->wallet_server->free_space);
+		sem_post(info->sems->main_wallet->mutex);
+		sem_post(info->sems->main_wallet->free_space);
 
 		// PROCESS
-		if (tx.id != -1)
+		if (tx.id == -1)
 		{
+			sem_post(info->sems->main_wallet->unread);
+			nanosleep(&ts, NULL);
 			continue;
 		}
+		sem_print(info->sems->main_wallet->unread, MAIN_WALLET_SEM_NAME UNREAD_SUFFIX);
 
 		wallet_process_transaction(&tx, wallet_id, info);
 
@@ -44,13 +55,19 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
 		sem_wait(info->sems->wallet_server->free_space);
 		sem_wait(info->sems->wallet_server->mutex);
 
+		if (*info->terminate)
+		{
+			break;
+		}
 		wallet_send_transaction(&tx, info, buffs);
-
 		sem_post(info->sems->wallet_server->mutex);
 		sem_post(info->sems->wallet_server->unread);
 
 		// PRINT
 		printf("[Wallet %d] Li a transação %d do buffer e a assinei!\n", wallet_id, tx.id);
+		sem_print(info->sems->main_wallet->unread, MAIN_WALLET_SEM_NAME UNREAD_SUFFIX);
+
+		nanosleep(&ts, NULL);
 	}
 	return *num_txs;
 }
@@ -80,6 +97,7 @@ void wallet_process_transaction(struct transaction *tx, int wallet_id, struct in
 {
 	int *num_txs = &info->wallets_stats[wallet_id];
 	sign_transaction(tx, wallet_id);
+	tx->change_time.signed_by_wallet = time(0);
 	(*num_txs)++;
 }
 

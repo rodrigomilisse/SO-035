@@ -8,6 +8,7 @@
 	],
 	"files.associations": {
 		"signal.h": "c",
-		"synchronization.h": "c"
+		"synchronization.h": "c",
+		"private.h": "c"
 	}
 }

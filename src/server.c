@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "synchronization.h"
+#include "private.h"
 
 /* Função principal de um servidor. Deve executar um ciclo infinito onde, em
  * cada iteração, lê uma transação do buffer de memória partilhada entre as carteiras e os servidores.
@@ -25,10 +26,15 @@ int execute_server(int server_id, struct info_container *info, struct buffers *b
 
 	while (!*info->terminate)
 	{
+
 		// RECEIVE
 		sem_wait(info->sems->wallet_server->unread);
 		sem_wait(info->sems->wallet_server->mutex);
 
+		if (*info->terminate)
+		{
+			break;
+		}
 		server_receive_transaction(&tx, info, buffs);
 
 		sem_post(info->sems->wallet_server->mutex);
@@ -37,6 +43,7 @@ int execute_server(int server_id, struct info_container *info, struct buffers *b
 		// PROCESS
 		if (tx.id == -1)
 		{
+			nanosleep(&ts, NULL);
 			continue;
 		}
 
@@ -46,6 +53,10 @@ int execute_server(int server_id, struct info_container *info, struct buffers *b
 		sem_wait(info->sems->server_main->free_space);
 		sem_wait(info->sems->server_main->mutex);
 
+		if (*info->terminate)
+		{
+			break;
+		}
 		server_send_transaction(&tx, info, buffs);
 
 		sem_post(info->sems->server_main->mutex);
@@ -62,6 +73,7 @@ int execute_server(int server_id, struct info_container *info, struct buffers *b
 		{
 			printf("[Server %d] A transação 0 falhou por alguma razão!\n\n", server_id);
 		}
+		nanosleep(&ts, NULL);
 	}
 	return *num_txs;
 }
@@ -114,6 +126,7 @@ void server_process_transaction(struct transaction *tx, int server_id, struct in
 	{
 		transfer_funds(tx, info->balances);
 		sign_transaction(tx, server_id);
+		tx->change_time.signed_by_server = time(0);
 		(*num_txs)++;
 	}
 }

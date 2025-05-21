@@ -33,7 +33,8 @@ void *create_shared_memory(char *name, int size)
 	char full_name[256];
 	sprintf(full_name, "/%s%d", name, getuid());
 
-	int fd = shm_open(full_name, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+	unlink(full_name);
+	int fd = shm_open(full_name, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR | O_EXCL);
 	if (fd == -1)
 	{
 		printf("erro: create_shared_memory/smh_open()\n");

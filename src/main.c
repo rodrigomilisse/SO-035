@@ -10,6 +10,9 @@
 #include <time.h>
 #include "synchronization.h"
 #include "csignal.h"
+#include "csettings.h"
+#include "private.h"
+#include "cstats.h"
 
 /* Função que lê do stdin com o scanf apropriado para cada tipo de dados
  * e valida os argumentos da aplicação, incluindo o saldo inicial,
@@ -18,24 +21,25 @@
  */
 void main_args(int argc, char *argv[], struct info_container *info)
 {
-	if (argc != 6)
+	if (argc != 3)
 	{
-		printf("[Main] Uso: ./SOchain init_balance n_wallets n_servers buff_size max_txs\n"
-			   "[Main] Exemplo: ./SOchain 100.0 2 1 5 5\n\n");
+		printf("[Main] Uso: ./SOchain args.txt setting.txt\n");
 		exit(1);
 	}
-	int args_corretos = 1;
-	args_corretos += sscanf(argv[1], "%f", &info->init_balance);
-	args_corretos += sscanf(argv[2], "%d", &info->n_wallets);
-	args_corretos += sscanf(argv[3], "%d", &info->n_servers);
-	args_corretos += sscanf(argv[4], "%d", &info->buffers_size);
-	args_corretos += sscanf(argv[5], "%d", &info->max_txs);
+	if (init_args(info, argv[1]))
+	{
+		printf("[Main] Valores Incorretos! Exemplo de uso:\n");
+		printf("100.0\n5\n2\n5\n5\n");
+		exit(1);
+	}
 
-	if (args_corretos < 6)
+	if (init_settings(argv[2]))
 	{
-		printf("[Main] Parâmetros incorretos! Exemplo de uso: ./SOchain 100.0 2 1 5 5");
+		printf("[Main] Valores Incorretos! Exemplo de uso:\n");
+		printf("log.txt\nstats.txt\n10\n");
 		exit(1);
 	}
+
 	printf("[Main] Parâmetros corretos!\n\n\n");
 }
 
@@ -149,11 +153,12 @@ void create_processes(struct info_container *info, struct buffers *buffs)
  */
 void user_interaction(struct info_container *info, struct buffers *buffs)
 {
+
 	int tx_counter = -1;
-	int alguns_milissegundos = 50;
-	const struct timespec ts = {.tv_sec = 0, .tv_nsec = (long)alguns_milissegundos * 1000000};
+
 	while (!*info->terminate)
 	{
+
 		char buff[5];
 		printf("[Main] Introduzir operação: ");
 		scanf("%s", buff);
@@ -180,6 +185,10 @@ void user_interaction(struct info_container *info, struct buffers *buffs)
 		else if (!strcmp("end", buff))
 		{
 			break;
+		}
+		else if (info->terminate || !strcmp("", buff))
+		{
+			printf("\n\n"); // TODO
 		}
 		else
 		{
@@ -217,6 +226,7 @@ void end_execution(struct info_container *info, struct buffers *buffs)
 	*info->terminate = 1;
 	wait_processes(info);
 	write_final_statistics(info);
+	write_stats(info, buffs);
 	(void)buffs;
 }
 
@@ -225,6 +235,7 @@ void end_execution(struct info_container *info, struct buffers *buffs)
  */
 void wait_processes(struct info_container *info)
 {
+	wake_up_processes(info);
 	for (int i = 0; i < info->n_wallets; i++)
 	{
 		wait_process(info->wallets_pids[i]);
@@ -274,15 +285,24 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
 	struct transaction tx = {.wallet_signature = -1, .server_signature = -1};
 	scanf("%d %d %f", &tx.src_id, &tx.dest_id, &tx.amount);
 	tx.id = ++(*tx_counter);
+	tx.change_time.created = time(0);
 
 	// SEND
 	sem_wait(info->sems->main_wallet->free_space);
+	printf("Main Wallet Free Waited\n");
 	sem_wait(info->sems->main_wallet->mutex);
+	printf("Main Wallet Editing\n");
 
+	if (*info->terminate)
+	{
+		return;
+	}
 	write_main_wallets_buffer(buffs->buff_main_wallets, info->buffers_size, &tx);
 
 	sem_post(info->sems->main_wallet->mutex);
+	printf("Main Wallet Done\n");
 	sem_post(info->sems->main_wallet->unread);
+	printf("Main Wallet Unread Posted\n\n");
 
 	printf("[Main] A transação %d foi criada para transferir %0.2f SOT da carteira %d para a carteira %d!\n",
 		   tx.id, tx.amount, tx.src_id, tx.dest_id);
@@ -299,12 +319,17 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 		return;
 	}
 	int id;
-	scanf("%d", &id);
+	scanf("%d", &id); // TODO STUCK
 	struct transaction tx;
 
 	// RECEIVE
 	sem_wait(info->sems->server_main->unread);
 	sem_wait(info->sems->server_main->mutex);
+
+	if (*info->terminate)
+	{
+		return;
+	}
 
 	read_servers_main_buffer(buffs->buff_servers_main, id, info->buffers_size, &tx);
 
@@ -395,7 +420,8 @@ int main(int argc, char *argv[])
 	create_dynamic_memory_structs(info, buffs);
 	create_shared_memory_structs(info, buffs);
 	create_processes(info, buffs);
-	// init_signal_handler(info->terminate);
+	init_signal_handler(info->terminate);
+	print_semaphores(info->sems);
 	user_interaction(info, buffs);
 	// release memory before terminating
 	destroy_shared_memory_structs(info, buffs);
@@ -404,4 +430,32 @@ int main(int argc, char *argv[])
 	deallocate_dynamic_memory(info);
 	deallocate_dynamic_memory(buffs);
 	return 0;
+}
+
+/*
+Acorda todos os processos filhos (que estejam a dormirem sem_wait), de forma a estes poderem terminar.
+ */
+void wake_up_processes(struct info_container *info)
+{
+	// TODO printf("dumping");
+	for (int i = 0; i < info->n_wallets; i++)
+	{
+		sem_post(info->sems->main_wallet->unread);
+		sem_post(info->sems->main_wallet->mutex);
+		sem_post(info->sems->wallet_server->free_space);
+		sem_post(info->sems->wallet_server->mutex);
+	}
+	for (int i = 0; i < info->n_servers; i++)
+	{
+		sem_post(info->sems->wallet_server->unread);
+		sem_post(info->sems->wallet_server->mutex);
+		sem_post(info->sems->server_main->free_space);
+		sem_post(info->sems->server_main->mutex);
+	}
+
+	sem_post(info->sems->server_main->unread);
+	sem_post(info->sems->server_main->mutex);
+
+	sem_post(info->sems->main_wallet->free_space);
+	sem_post(info->sems->main_wallet->mutex);
 }

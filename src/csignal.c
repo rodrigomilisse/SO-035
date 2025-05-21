@@ -2,10 +2,13 @@
  * Membros: Francisco Lima: nº 61864, Marcio Caetano nº 61799
  */
 
-#define _POSIX_C_SOURCE 200809L // TODO necessario?
+#define _POSIX_C_SOURCE 200809L
 
 #include "csignal.h"
 #include <signal.h>
+
+int *TERMINATE;
+struct sigaction sa_SIGINT;
 
 void init_signal_handler(int *terminate_ptr)
 {
