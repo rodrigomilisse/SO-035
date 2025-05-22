@@ -156,7 +156,7 @@ void create_processes(struct info_container *info, struct buffers *buffs)
 void user_interaction(struct info_container *info, struct buffers *buffs)
 {
 
-	int tx_counter = -1;
+	int tx_counter = 0;
 
 	while (!*info->terminate)
 	{

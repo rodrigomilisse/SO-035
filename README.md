@@ -76,4 +76,3 @@ my_project/
 - [x] Log Files
 - [ ] Alarmes
 - [x] Verificar que wallet existe em bal/trx
-
