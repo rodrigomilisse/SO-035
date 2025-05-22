@@ -5,6 +5,6 @@
 #ifndef CLOG_H_GUARD
 #define CLOG_H_GUARD
 
-void log(char *command);
+void log_format(const char *command, ...);
 
 #endif

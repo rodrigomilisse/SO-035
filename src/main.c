@@ -13,6 +13,7 @@
 #include "csettings.h"
 #include "private.h"
 #include "cstats.h"
+#include "clog.h"
 #include <errno.h>
 
 /* Função que lê do stdin com o scanf apropriado para cada tipo de dados
@@ -189,6 +190,7 @@ void user_interaction(struct info_container *info, struct buffers *buffs)
 		}
 		else if (!strcmp("end", buff))
 		{
+			log_format("end");
 			break;
 		}
 		else if (info->terminate || !strcmp("", buff))
@@ -259,6 +261,12 @@ void print_balance(struct info_container *info)
 {
 	int id;
 	scanf("%d", &id);
+	log_format("bal %d", id);
+	if (id < 0 || id >= info->n_wallets)
+	{
+		printf("[Main] A carteira %d não existe!\n\n", id);
+		return;
+	}
 	printf("[Main] O saldo da carteira %d é de %0.2f SOT atualmente.\n\n", id, info->balances[id]);
 }
 
@@ -282,6 +290,20 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
 	struct transaction tx = {.wallet_signature = -1, .server_signature = -1};
 	scanf("%d %d %f", &tx.src_id, &tx.dest_id, &tx.amount);
 	tx.id = ++(*tx_counter);
+
+	log_format("trx %d %d %f", tx.src_id, tx.dest_id, tx.amount);
+
+	if (tx.src_id < 0 || tx.src_id >= info->n_wallets)
+	{
+		printf("[Main] A carteira de origem %d não existe!\n\n", tx.src_id);
+		return;
+	}
+	if (tx.dest_id < 0 || tx.dest_id >= info->n_wallets)
+	{
+		printf("[Main] A carteira de destino %d não existe!\n\n", tx.dest_id);
+		return;
+	}
+
 	tx.change_time.created = time(0);
 
 	// SEND
@@ -300,7 +322,7 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
 	printf("Main Wallet Unread Posted\n\n");
 
 	printf("[Main] A transação %d foi criada para transferir %0.2f SOT da carteira %d para a carteira %d!\n",
-		   tx.id, tx.amount, tx.src_id, tx.dest_id);
+				 tx.id, tx.amount, tx.src_id, tx.dest_id);
 }
 
 /* Tenta ler o recibo da transação (identificada por id, o qual ainda está no
@@ -315,11 +337,13 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 	scanf("%d", &id); // TODO STUCK
 
 	printf("\n tx_id: %d\n\n", tx.id);
+	log_format("rcp %d", id);
 
 	// RECEIVE
 	if (sem_timedwait(info->sems->server_main->unread, &ts) == EAGAIN)
 	{
 		printf("[Main] O comprovativo da execução da transação %d não está disponível.\n\n", tx.id);
+		return;
 	}
 
 	sem_wait(info->sems->server_main->mutex);
@@ -344,8 +368,8 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 	else
 	{
 		printf("[Main] O comprovativo da execução %d foi obtido.\n"
-			   "[Main] O comprovativo da transação id %d contém src_id %d, dest_id %d, amount %0.2f e foi assinado pela carteira %d e servidor %d.\n\n",
-			   tx.id, tx.id, tx.src_id, tx.dest_id, tx.amount, tx.wallet_signature, tx.wallet_signature);
+					 "[Main] O comprovativo da transação id %d contém src_id %d, dest_id %d, amount %0.2f e foi assinado pela carteira %d e servidor %d.\n\n",
+					 tx.id, tx.id, tx.src_id, tx.dest_id, tx.amount, tx.wallet_signature, tx.wallet_signature);
 	}
 }
 
@@ -357,24 +381,25 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 void print_stat(int tx_counter, struct info_container *info)
 {
 	printf("- Configuração inicial:\n"
-		   "        Propriedade     Valor\n"
-		   "        init_balance    %0.2f\n"
-		   "        n_wallets       %d\n"
-		   "        n_servers       %d\n"
-		   "        buffers_size:   %d\n"
-		   "        max_txs         %d\n"
-		   "- Variáveis atuais:\n"
-		   "        terminate       %d\n"
-		   "        tx_count:       %d\n"
-		   "- Informação sobre as carteiras:\n"
-		   "        Carteira        PID             Saldo           Transações Assinadas\n",
-		   info->init_balance,
-		   info->n_wallets,
-		   info->n_servers,
-		   info->buffers_size,
-		   info->max_txs,
-		   *info->terminate,
-		   tx_counter);
+				 "        Propriedade     Valor\n"
+				 "        init_balance    %0.2f\n"
+				 "        n_wallets       %d\n"
+				 "        n_servers       %d\n"
+				 "        buffers_size:   %d\n"
+				 "        max_txs         %d\n"
+				 "- Variáveis atuais:\n"
+				 "        terminate       %d\n"
+				 "        tx_count:       %d\n"
+				 "- Informação sobre as carteiras:\n"
+				 "        Carteira        PID             Saldo           Transações Assinadas\n",
+				 info->init_balance,
+				 info->n_wallets,
+				 info->n_servers,
+				 info->buffers_size,
+				 info->max_txs,
+				 *info->terminate,
+				 tx_counter);
+	log_format("stat %d", tx_counter);
 
 	char SOT_str[64];
 
@@ -382,10 +407,10 @@ void print_stat(int tx_counter, struct info_container *info)
 	{
 		sprintf(SOT_str, "%.2f SOT", info->balances[i]);
 		printf("        %-10d      %-10d      %-15s %d\n",
-			   i, info->wallets_pids[i], SOT_str, info->wallets_stats[i]);
+					 i, info->wallets_pids[i], SOT_str, info->wallets_stats[i]);
 	}
 	printf("- Informação sobre os servidores:\n"
-		   "        Servidor        PID             Transações Processadas\n");
+				 "        Servidor        PID             Transações Processadas\n");
 	for (int i = 0; i < info->n_servers; i++)
 	{
 		printf("        %-10d      %-10d      %d\n", i, info->servers_pids[i], info->servers_stats[i]);
@@ -398,11 +423,12 @@ void print_stat(int tx_counter, struct info_container *info)
 void help()
 {
 	printf("[Main] Operações disponíveis:\n"
-		   "[Main]  bal id - consultar o saldo da carteira identificada por id.\n"
-		   "[Main]  trx src_id dest_id amount - criar uma nova transação.\n"
-		   "[Main]  rcp id - obter o comprovativo da transação de número id.\n"
-		   "[Main]  help - imprime a informação sobre as operações disponíveis.\n"
-		   "[Main]  end - termina a execução do SOchain.\n\n");
+				 "[Main]  bal id - consultar o saldo da carteira identificada por id.\n"
+				 "[Main]  trx src_id dest_id amount - criar uma nova transação.\n"
+				 "[Main]  rcp id - obter o comprovativo da transação de número id.\n"
+				 "[Main]  help - imprime a informação sobre as operações disponíveis.\n"
+				 "[Main]  end - termina a execução do SOchain.\n\n");
+	log_format("help");
 }
 
 /* Função principal do SOchain. Inicializa o sistema, chama as funções de alocação
