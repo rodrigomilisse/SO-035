@@ -34,10 +34,11 @@ clean:
 >   rm -f $(OBJ_DIR)/*.o
 >   rm -f $(OUTPUT_DIR)/$(PROGRAM_NAME)
 
-re: clean all
+re:
+>	clear
+>	clean all
 
 run: all
-> clear
 >	./$(OUTPUT_DIR)/$(PROGRAM_NAME) args.txt settings.txt
 
 prof:

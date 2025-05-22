@@ -13,6 +13,7 @@
 #include "csettings.h"
 #include "private.h"
 #include "cstats.h"
+#include <errno.h>
 
 /* Função que lê do stdin com o scanf apropriado para cada tipo de dados
  * e valida os argumentos da aplicação, incluindo o saldo inicial,
@@ -23,7 +24,7 @@ void main_args(int argc, char *argv[], struct info_container *info)
 {
 	if (argc != 3)
 	{
-		printf("[Main] Uso: ./SOchain args.txt setting.txt\n");
+		printf("[Main] Uso: ./SOchain args.txt settings.txt\n");
 		exit(1);
 	}
 	if (init_args(info, argv[1]))
@@ -309,12 +310,20 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
 void receive_receipt(struct info_container *info, struct buffers *buffs)
 {
 	int id;
-	scanf("%d", &id); // TODO STUCK
 	struct transaction tx;
 
+	scanf("%d", &id); // TODO STUCK
+
+	printf("\n tx_id: %d\n\n", tx.id);
+
 	// RECEIVE
-	sem_wait(info->sems->server_main->unread);
+	if (sem_timedwait(info->sems->server_main->unread, &ts) == EAGAIN)
+	{
+		printf("[Main] O comprovativo da execução da transação %d não está disponível.\n\n", tx.id);
+	}
+
 	sem_wait(info->sems->server_main->mutex);
+	printf("\n tx_id: %d\n\n", tx.id);
 
 	if (*info->terminate)
 	{
@@ -323,6 +332,7 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 
 	read_servers_main_buffer(buffs->buff_servers_main, id, info->buffers_size, &tx);
 
+	printf("\n tx_id: %d\n\n", tx.id);
 	sem_post(info->sems->server_main->mutex);
 	sem_post(info->sems->server_main->free_space);
 
@@ -411,7 +421,6 @@ int main(int argc, char *argv[])
 	create_shared_memory_structs(info, buffs);
 	create_processes(info, buffs);
 	init_signal_handler(info->terminate);
-	print_semaphores(info->sems);
 	user_interaction(info, buffs);
 	// release memory before terminating
 	destroy_shared_memory_structs(info, buffs);

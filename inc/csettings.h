@@ -7,10 +7,12 @@
 
 #include "main.h"
 
+#define MAX_NAME_LENGTH 256
+
 struct settings
 {
-	char *log_file;
-	char *stats_file;
+	char log_file[MAX_NAME_LENGTH];
+	char stats_file[MAX_NAME_LENGTH];
 	int period;
 };
 

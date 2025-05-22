@@ -21,11 +21,6 @@ int init_settings(char *filename)
 		fclose(file);
 		return 1;
 	}
-	{
-		perror("Error reading settings");
-		fclose(file);
-		return 1;
-	}
 	fclose(file);
 	// printf("Settings initialized.\n");
 	return 0;

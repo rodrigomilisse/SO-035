@@ -24,10 +24,7 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
 	struct transaction tx;
 	while (!*info->terminate)
 	{
-
 		// RECEIVE
-
-		sem_print(info->sems->main_wallet->unread, MAIN_WALLET_SEM_NAME UNREAD_SUFFIX);
 		sem_wait(info->sems->main_wallet->unread);
 		sem_wait(info->sems->main_wallet->mutex);
 
@@ -47,8 +44,6 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
 			nanosleep(&ts, NULL);
 			continue;
 		}
-		sem_print(info->sems->main_wallet->unread, MAIN_WALLET_SEM_NAME UNREAD_SUFFIX);
-
 		wallet_process_transaction(&tx, wallet_id, info);
 
 		// SEND
@@ -60,13 +55,12 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
 			break;
 		}
 		wallet_send_transaction(&tx, info, buffs);
+
 		sem_post(info->sems->wallet_server->mutex);
 		sem_post(info->sems->wallet_server->unread);
 
 		// PRINT
 		printf("[Wallet %d] Li a transação %d do buffer e a assinei!\n", wallet_id, tx.id);
-		sem_print(info->sems->main_wallet->unread, MAIN_WALLET_SEM_NAME UNREAD_SUFFIX);
-
 		nanosleep(&ts, NULL);
 	}
 	return *num_txs;
