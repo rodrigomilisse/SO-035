@@ -7,13 +7,21 @@
 
 #define _POSIX_C_SOURCE 200809L // TODO necessario?
 #include <signal.h>
+#include "csettings.h"
+#include <stdbool.h>
 
-extern int *TERMINATE;
+extern bool TERMINATE;
 
-extern struct sigaction sa_SIGINT;
-
-void init_signal_handler(int *terminate_ptr);
+extern bool ALARM;
 
 void interrupt_handler(int);
+
+void alarm_handler(int);
+
+void reset_alarm();
+
+void print_alarm_stats(struct buffers *buffs);
+
+void init_signal_handlers();
 
 #endif

@@ -14,7 +14,29 @@
 #include "private.h"
 #include "cstats.h"
 #include "clog.h"
+#include <stdarg.h>
 #include <errno.h>
+
+bool safe_scanf(struct info_container *info, struct buffers *buffs, const char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+
+	vscanf(format, args);
+	if (TERMINATE)
+	{
+		end_execution(info, buffs);
+		return false;
+	}
+	if (ALARM)
+	{
+		print_alarm_stats(buffs);
+		reset_alarm();
+	}
+
+	va_end(args);
+	return true;
+}
 
 /* Função que lê do stdin com o scanf apropriado para cada tipo de dados
  * e valida os argumentos da aplicação, incluindo o saldo inicial,
@@ -155,16 +177,15 @@ void create_processes(struct info_container *info, struct buffers *buffs)
  */
 void user_interaction(struct info_container *info, struct buffers *buffs)
 {
-
 	int tx_counter = 0;
 
+	reset_alarm();
 	while (!*info->terminate)
 	{
 
 		char buff[5];
 		printf("[Main] Introduzir operação: ");
-		scanf("%s", buff);
-		if (*info->terminate)
+		if (!safe_scanf(info, buffs, "%s", buff))
 		{
 			break;
 		}
@@ -191,7 +212,7 @@ void user_interaction(struct info_container *info, struct buffers *buffs)
 		else if (!strcmp("end", buff))
 		{
 			log_format("end");
-			break;
+			end_execution(info, buffs);
 		}
 		else if (info->terminate || !strcmp("", buff))
 		{
@@ -203,7 +224,6 @@ void user_interaction(struct info_container *info, struct buffers *buffs)
 		}
 		nanosleep(&ts, NULL);
 	}
-	end_execution(info, buffs);
 }
 
 /* Função que imprime as estatísticas finais do SOchain, incluindo
@@ -234,7 +254,6 @@ void end_execution(struct info_container *info, struct buffers *buffs)
 	wait_processes(info);
 	write_final_statistics(info);
 	write_stats(info, buffs);
-	(void)buffs;
 }
 
 /* Aguarda a terminação dos processos filhos previamente criados. Pode usar
@@ -260,7 +279,10 @@ void wait_processes(struct info_container *info)
 void print_balance(struct info_container *info)
 {
 	int id;
-	scanf("%d", &id);
+	if (!safe_scanf(info, (struct buffers *)NULL, "%d", &id)) // TODO
+	{
+		return;
+	}
 	log_format("bal %d", id);
 	if (id < 0 || id >= info->n_wallets)
 	{
@@ -282,13 +304,19 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
 	if (info->max_txs == *tx_counter + 1)
 	{
 		int flush_STDIN[3];
-		scanf("%d %d %f", &flush_STDIN[0], &flush_STDIN[1], (float *)&flush_STDIN[2]);
+		if (!safe_scanf(info, buffs, "%d %d %f", &flush_STDIN[0], &flush_STDIN[1], (float *)&flush_STDIN[2]))
+		{
+			return;
+		}
 		printf("[Main] O número máximo de transações foi alcançado!\n\n");
 		return;
 	}
 
 	struct transaction tx = {.wallet_signature = -1, .server_signature = -1};
-	scanf("%d %d %f", &tx.src_id, &tx.dest_id, &tx.amount);
+	if (!safe_scanf(info, buffs, "%d %d %f", &tx.src_id, &tx.dest_id, &tx.amount))
+	{
+		return;
+	}
 	tx.id = ++(*tx_counter);
 
 	log_format("trx %d %d %f", tx.src_id, tx.dest_id, tx.amount);
@@ -317,9 +345,7 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
 	write_main_wallets_buffer(buffs->buff_main_wallets, info->buffers_size, &tx);
 
 	sem_post(info->sems->main_wallet->mutex);
-	printf("Main Wallet Done\n");
 	sem_post(info->sems->main_wallet->unread);
-	printf("Main Wallet Unread Posted\n\n");
 
 	printf("[Main] A transação %d foi criada para transferir %0.2f SOT da carteira %d para a carteira %d!\n",
 		   tx.id, tx.amount, tx.src_id, tx.dest_id);
@@ -334,7 +360,10 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 	int id;
 	struct transaction tx;
 
-	scanf("%d", &id); // TODO STUCK
+	if (!safe_scanf(info, buffs, "%d", &id))
+	{
+		return;
+	}
 
 	printf("\n tx_id: %d\n\n", tx.id);
 	log_format("rcp %d", id);
@@ -441,12 +470,13 @@ int main(int argc, char *argv[])
 	// init data structures
 	struct info_container *info = allocate_dynamic_memory(sizeof(struct info_container));
 	struct buffers *buffs = allocate_dynamic_memory(sizeof(struct buffers));
+	init_signal_handlers();
+
 	// execute main code
 	main_args(argc, argv, info);
 	create_dynamic_memory_structs(info, buffs);
 	create_shared_memory_structs(info, buffs);
 	create_processes(info, buffs);
-	init_signal_handler(info->terminate);
 	user_interaction(info, buffs);
 	// release memory before terminating
 	destroy_shared_memory_structs(info, buffs);

@@ -6,22 +6,45 @@
 
 #include "csignal.h"
 #include <signal.h>
+#include <stdbool.h>
+#include "csettings.h"
+#include <unistd.h>
+#include <stdio.h>
 
-int *TERMINATE;
-struct sigaction sa_SIGINT;
+bool TERMINATE;
+bool ALARM;
 
-void init_signal_handler(int *terminate_ptr)
-{
-	TERMINATE = terminate_ptr;
-	sa_SIGINT.sa_handler = &interrupt_handler;
-	sigemptyset(&sa_SIGINT.sa_mask);
-	sigaddset(&sa_SIGINT.sa_mask, SIGINT);
-	sigaction(SIGINT, &sa_SIGINT, 0);
-}
+struct sigaction sa_SIGINT = {.sa_handler = &interrupt_handler};
+
+struct sigaction sa_SIGALARM = {.sa_handler = &alarm_handler};
 
 void interrupt_handler(int signum)
 {
-	*TERMINATE = 1;
+	TERMINATE = true;
 
 	(void)signum;
+}
+
+void alarm_handler(int signum)
+{
+	ALARM = true;
+
+	(void)signum;
+}
+
+void reset_alarm()
+{
+	ALARM = 0;
+	alarm(get_settings()->period);
+}
+
+void print_alarm_stats(struct buffers *buffs)
+{
+	printf("ALARM");
+}
+
+void init_signal_handlers()
+{
+	sigaction(SIGINT, &sa_SIGINT, NULL);
+	sigaction(SIGALRM, &sa_SIGALARM, NULL);
 }

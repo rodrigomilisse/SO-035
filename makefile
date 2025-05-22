@@ -36,7 +36,8 @@ clean:
 
 re:
 >	clear
->	clean all
+>	make clean
+>	make all
 
 run: all
 >	./$(OUTPUT_DIR)/$(PROGRAM_NAME) args.txt settings.txt
