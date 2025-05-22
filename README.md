@@ -65,7 +65,7 @@ my_project/
 ```
 
 # TODOS:
-```
+
 - [x] sincronização: early terminate on scanf
 - [x] use new main
 - [x] finish settings.txt
@@ -73,4 +73,3 @@ my_project/
 - [ ] Log Files
 - [ ] Alarmes
 - [ ] Verificar que wallet existe em bal/trx
-```

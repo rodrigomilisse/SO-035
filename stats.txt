@@ -1,7 +1,7 @@
-Process Stattistics:
-Main has PID: [228287]
-There were 2 Wallets, PIDs: [228288, 228289]
-There were 1 Servers, PIDs: [228290]
+Process Statistics:
+Main has PID: [306503]
+There were 2 Wallets, PIDs: [306504, 306505]
+There were 1 Servers, PIDs: [306506]
 Main received 0 transaction(s)!
 Wallet 0 signed 0 transaction(s)!
 Wallet 1 signed 0 transaction(s)!
