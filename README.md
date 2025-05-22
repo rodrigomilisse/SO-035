@@ -50,25 +50,6 @@
 }
 ```
 
-### **`.vscode/settings.json`**
-```json
-{
-	"makefile.launchConfigurations": [
-		{
-			"cwd": "/home/francisco/SO/SOChain/bin",
-			"binaryPath": "/home/francisco/SO/SOChain/bin/main",
-			"binaryArgs": []
-		}
-	],
-	"files.associations": {
-		"signal.h": "c",
-		"synchronization.h": "c",
-		"private.h": "c"
-	}
->>>>>>> 7c04bd5 (update README)
-}
-```
-
 ### **Estrutura de Ficheiros**
 
 ```

@@ -322,7 +322,7 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
 	printf("Main Wallet Unread Posted\n\n");
 
 	printf("[Main] A transação %d foi criada para transferir %0.2f SOT da carteira %d para a carteira %d!\n",
-				 tx.id, tx.amount, tx.src_id, tx.dest_id);
+		   tx.id, tx.amount, tx.src_id, tx.dest_id);
 }
 
 /* Tenta ler o recibo da transação (identificada por id, o qual ainda está no
@@ -368,8 +368,8 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 	else
 	{
 		printf("[Main] O comprovativo da execução %d foi obtido.\n"
-					 "[Main] O comprovativo da transação id %d contém src_id %d, dest_id %d, amount %0.2f e foi assinado pela carteira %d e servidor %d.\n\n",
-					 tx.id, tx.id, tx.src_id, tx.dest_id, tx.amount, tx.wallet_signature, tx.wallet_signature);
+			   "[Main] O comprovativo da transação id %d contém src_id %d, dest_id %d, amount %0.2f e foi assinado pela carteira %d e servidor %d.\n\n",
+			   tx.id, tx.id, tx.src_id, tx.dest_id, tx.amount, tx.wallet_signature, tx.wallet_signature);
 	}
 }
 
@@ -381,24 +381,24 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 void print_stat(int tx_counter, struct info_container *info)
 {
 	printf("- Configuração inicial:\n"
-				 "        Propriedade     Valor\n"
-				 "        init_balance    %0.2f\n"
-				 "        n_wallets       %d\n"
-				 "        n_servers       %d\n"
-				 "        buffers_size:   %d\n"
-				 "        max_txs         %d\n"
-				 "- Variáveis atuais:\n"
-				 "        terminate       %d\n"
-				 "        tx_count:       %d\n"
-				 "- Informação sobre as carteiras:\n"
-				 "        Carteira        PID             Saldo           Transações Assinadas\n",
-				 info->init_balance,
-				 info->n_wallets,
-				 info->n_servers,
-				 info->buffers_size,
-				 info->max_txs,
-				 *info->terminate,
-				 tx_counter);
+		   "        Propriedade     Valor\n"
+		   "        init_balance    %0.2f\n"
+		   "        n_wallets       %d\n"
+		   "        n_servers       %d\n"
+		   "        buffers_size:   %d\n"
+		   "        max_txs         %d\n"
+		   "- Variáveis atuais:\n"
+		   "        terminate       %d\n"
+		   "        tx_count:       %d\n"
+		   "- Informação sobre as carteiras:\n"
+		   "        Carteira        PID             Saldo           Transações Assinadas\n",
+		   info->init_balance,
+		   info->n_wallets,
+		   info->n_servers,
+		   info->buffers_size,
+		   info->max_txs,
+		   *info->terminate,
+		   tx_counter);
 	log_format("stat %d", tx_counter);
 
 	char SOT_str[64];
@@ -407,10 +407,10 @@ void print_stat(int tx_counter, struct info_container *info)
 	{
 		sprintf(SOT_str, "%.2f SOT", info->balances[i]);
 		printf("        %-10d      %-10d      %-15s %d\n",
-					 i, info->wallets_pids[i], SOT_str, info->wallets_stats[i]);
+			   i, info->wallets_pids[i], SOT_str, info->wallets_stats[i]);
 	}
 	printf("- Informação sobre os servidores:\n"
-				 "        Servidor        PID             Transações Processadas\n");
+		   "        Servidor        PID             Transações Processadas\n");
 	for (int i = 0; i < info->n_servers; i++)
 	{
 		printf("        %-10d      %-10d      %d\n", i, info->servers_pids[i], info->servers_stats[i]);
@@ -423,11 +423,11 @@ void print_stat(int tx_counter, struct info_container *info)
 void help()
 {
 	printf("[Main] Operações disponíveis:\n"
-				 "[Main]  bal id - consultar o saldo da carteira identificada por id.\n"
-				 "[Main]  trx src_id dest_id amount - criar uma nova transação.\n"
-				 "[Main]  rcp id - obter o comprovativo da transação de número id.\n"
-				 "[Main]  help - imprime a informação sobre as operações disponíveis.\n"
-				 "[Main]  end - termina a execução do SOchain.\n\n");
+		   "[Main]  bal id - consultar o saldo da carteira identificada por id.\n"
+		   "[Main]  trx src_id dest_id amount - criar uma nova transação.\n"
+		   "[Main]  rcp id - obter o comprovativo da transação de número id.\n"
+		   "[Main]  help - imprime a informação sobre as operações disponíveis.\n"
+		   "[Main]  end - termina a execução do SOchain.\n\n");
 	log_format("help");
 }
 
