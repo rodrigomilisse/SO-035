@@ -72,4 +72,5 @@ my_project/
 - [ ] Temporização
 - [ ] Log Files
 - [ ] Alarmes
+- [ ] Verificar que wallet existe em bal/trx
 ```
