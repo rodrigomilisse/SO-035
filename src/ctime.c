@@ -12,12 +12,12 @@
 
 char *get_timestamp()
 {
-	struct timeval tv;
+	time_t rawtime;
 	struct tm *tm_info;
 	char buffer[64];
 
-	get_settings(&tv, NULL);
-	tm_info = localtime(&tv.tv_sec);
+	time(&rawtime);
+	tm_info = localtime(&rawtime);
 
 	strftime(buffer, sizeof(buffer), "%Y%m%d %H:%M:%S", tm_info);
 	char *finaltime = malloc(80);
@@ -26,6 +26,6 @@ char *get_timestamp()
 		perror("malloc");
 		exit(EXIT_FAILURE);
 	}
-	snprintf(finaltime, 80, "%s.%03ld", buffer, tv.tv_usec / 1000);
+	snprintf(finaltime, 80, "%s.%03ld", buffer, rawtime % 1000);
 	return finaltime;
 }
