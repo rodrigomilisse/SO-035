@@ -6,8 +6,8 @@
 #include "synchronization-private.h"
 #include "memory.h"
 #include <semaphore.h> //sem_t
-#include <fcntl.h>		 /* For O_* constants */
-#include <sys/stat.h>	 /* For mode constants */
+#include <fcntl.h>	   /* For O_* constants */
+#include <sys/stat.h>  /* For mode constants */
 
 /* Função que cria *um* semaforo , inicializado a <value> */
 sem_t *create_semaphore(char *name, unsigned v)
@@ -82,7 +82,7 @@ void destroy_semaphores(struct semaphores *sems)
 Restantes argumentos: os 3 nomes a dar aos semáforos.
 Retorna: um pointer para a estrutura que contem 3 semaforos. */
 struct triplet_sems *create_triplet_sems(
-		unsigned v, char *freespace_name1, char *unread_name, char *mutex_name)
+	unsigned v, char *freespace_name1, char *unread_name, char *mutex_name)
 {
 	char *name = malloc(strlen(mutex_name) + strlen(SEMS_NAME));
 	strcat(name, mutex_name);
@@ -101,27 +101,27 @@ struct triplet_sems *create_triplet_sems(
 struct triplet_sems *create_main_wallet_sems(unsigned v)
 {
 	return create_triplet_sems(v,
-														 MAIN_WALLET_SEM_NAME FREE_SPACE_SUFFIX,
-														 MAIN_WALLET_SEM_NAME UNREAD_SUFFIX,
-														 MAIN_WALLET_SEM_NAME MUTEX_SUFFIX);
+							   MAIN_WALLET_SEM_NAME FREE_SPACE_SUFFIX,
+							   MAIN_WALLET_SEM_NAME UNREAD_SUFFIX,
+							   MAIN_WALLET_SEM_NAME MUTEX_SUFFIX);
 }
 
 /* funcao que cria os 3 semaforos necessários para aceder ao buffer Wallet-Server */
 struct triplet_sems *create_wallet_server_sems(unsigned v)
 {
 	return create_triplet_sems(v,
-														 WALLET_SERVER_SEM_NAME FREE_SPACE_SUFFIX,
-														 WALLET_SERVER_SEM_NAME UNREAD_SUFFIX,
-														 WALLET_SERVER_SEM_NAME MUTEX_SUFFIX);
+							   WALLET_SERVER_SEM_NAME FREE_SPACE_SUFFIX,
+							   WALLET_SERVER_SEM_NAME UNREAD_SUFFIX,
+							   WALLET_SERVER_SEM_NAME MUTEX_SUFFIX);
 }
 
 /* funcao que cria os 3 semaforos necessários para aceder ao buffer Server-Main */
 struct triplet_sems *create_server_main_sems(unsigned v)
 {
 	return create_triplet_sems(v,
-														 SERVER_MAIN_SEM_NAME FREE_SPACE_SUFFIX,
-														 SERVER_MAIN_SEM_NAME UNREAD_SUFFIX,
-														 SERVER_MAIN_SEM_NAME MUTEX_SUFFIX);
+							   SERVER_MAIN_SEM_NAME FREE_SPACE_SUFFIX,
+							   SERVER_MAIN_SEM_NAME UNREAD_SUFFIX,
+							   SERVER_MAIN_SEM_NAME MUTEX_SUFFIX);
 }
 
 // PRIVATE

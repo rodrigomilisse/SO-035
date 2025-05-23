@@ -79,8 +79,8 @@ SOCHAIN/
 - [x] finish settings.txt
 - [x] Temporização
 - [x] Log Files
-- [ ] Alarmes
-- [ ] Mudar `ctime.c` para usar `clock_gettime`
+- [x] Alarmes
+- [x] Mudar `ctime.c` para usar `clock_gettime`
 - [x] Verificar que wallet existe em bal/trx
 
 ### **Autores**

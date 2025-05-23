@@ -2,15 +2,17 @@
  * Membros: Francisco Lima: nº 61864, Marcio Caetano nº -----
  */
 
+#define _POSIX_C_SOURCE 200809L
 #include "server.h"
 #include "main.h"
 #include "ctime.h"
 #include <unistd.h>
 #include <time.h>
 #include <stdio.h>
-// #include <stdbool.h>
+#include <stdbool.h>
 #include "synchronization.h"
 #include "synchronization-private.h"
+#include "server-private.h"
 
 /* Função principal de um servidor. Deve executar um ciclo infinito onde, em
  * cada iteração, lê uma transação do buffer de memória partilhada entre as carteiras e os servidores.
@@ -66,8 +68,10 @@ int execute_server(int server_id, struct info_container *info, struct buffers *b
 		if (tx.server_signature != -1)
 		{
 			printf("[Server %d] Li a transação %d do buffer e esta foi processada corretamente!\n"
-						 "[Server %d] ledger <- [tx.id %d, src_id %d, dest_id %d, amount %0.2f]\n\n",
-						 server_id, tx.id, server_id, tx.id, tx.src_id, tx.dest_id, tx.amount);
+				   // ledger redirecionado para logg.txt
+				   // "[Server %d] ledger <- [tx.id %d, src_id %d, dest_id %d, amount %0.2f]\n\n",
+				   ,
+				   server_id, tx.id);
 		}
 		else
 		{
@@ -88,28 +92,6 @@ void server_receive_transaction(struct transaction *tx, struct info_container *i
 	{
 		read_wallets_servers_buffer(buffs->buff_wallets_servers, info->buffers_size, tx);
 	}
-}
-
-static inline bool verify_wallet_ids(struct transaction *tx, struct info_container *info)
-{
-	return tx->src_id != tx->dest_id && tx->src_id < info->n_wallets && tx->dest_id < info->n_wallets;
-}
-static inline bool verify_funds(struct transaction *tx, float *balances)
-{
-	return tx->amount <= balances[tx->src_id];
-}
-static inline bool verify_wallet_signature(struct transaction *tx)
-{
-	return tx->wallet_signature == tx->src_id;
-}
-static inline void sign_transaction(struct transaction *tx, int server_id)
-{
-	tx->server_signature = server_id;
-}
-static inline void transfer_funds(struct transaction *tx, float *balances)
-{
-	balances[tx->src_id] -= tx->amount;
-	balances[tx->dest_id] += tx->amount;
 }
 
 /* Função que processa uma transação tx, verificando a validade dos identificadores das carteiras de origem e destino,
@@ -147,4 +129,28 @@ void server_send_transaction(struct transaction *tx, struct info_container *info
 	{
 		write_servers_main_buffer(buffs->buff_servers_main, info->buffers_size, tx);
 	}
+}
+
+// PRIVATE
+
+static inline bool verify_wallet_ids(struct transaction *tx, struct info_container *info)
+{
+	return tx->src_id != tx->dest_id && tx->src_id < info->n_wallets && tx->dest_id < info->n_wallets;
+}
+static inline bool verify_funds(struct transaction *tx, float *balances)
+{
+	return tx->amount <= balances[tx->src_id];
+}
+static inline bool verify_wallet_signature(struct transaction *tx)
+{
+	return tx->wallet_signature == tx->src_id;
+}
+static inline void sign_transaction(struct transaction *tx, int server_id)
+{
+	tx->server_signature = server_id;
+}
+static inline void transfer_funds(struct transaction *tx, float *balances)
+{
+	balances[tx->src_id] -= tx->amount;
+	balances[tx->dest_id] += tx->amount;
 }
