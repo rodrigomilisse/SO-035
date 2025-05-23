@@ -52,7 +52,7 @@ void reset_alarm()
 	alarm(get_settings().period);
 }
 
-void print_alarm_stats(struct buffers *buffs, struct info_container *info)
+void print_alarm_stats(struct info_container *info, struct buffers *buffs)
 {
 	printf("\n");
 

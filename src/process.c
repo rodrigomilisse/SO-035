@@ -2,6 +2,7 @@
  * Membros: Francisco Lima: nº 61864, Marcio Caetano nº 61799
  */
 
+#define _POSIX_C_SOURCE 200809L
 #include "process.h"
 #include "memory.h"
 #include "main.h"
@@ -10,6 +11,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <signal.h>
 
 /* Função que inicia um novo processo Wallet através da função fork do SO. O novo
  * processo filho irá executar a função execute_wallet respetiva, fazendo exit do retorno.
@@ -17,6 +19,9 @@
  */
 int launch_wallet(int wallet_id, struct info_container *info, struct buffers *buffs)
 {
+	// Apenas a Main deve tratar sinais, todos os outros processos devem ignorar
+	sigaction(SIGINT, &(struct sigaction){.sa_handler = SIG_IGN}, NULL);
+
 	pid_t pid = fork();
 
 	if (pid == 0)

@@ -2,6 +2,7 @@
  * Membros: Francisco Lima: nº 61864, Marcio Caetano nº 61799
  */
 
+#define _POSIX_C_SOURCE 200809L
 #include "main.h"
 #include "main-private.h"
 #include "memory.h"
@@ -9,7 +10,6 @@
 #include "ctime.h"
 #include <string.h>
 #include <stdio.h>
-#include <time.h>
 #include "synchronization.h"
 #include "csignal.h"
 #include "csettings.h"
@@ -19,26 +19,7 @@
 #include <stdarg.h>
 #include <errno.h>
 
-bool safe_scanf(struct info_container *info, struct buffers *buffs, const char *format, ...)
-{
-	va_list args;
-	va_start(args, format);
-
-	vscanf(format, args);
-	if (TERMINATE)
-	{
-		end_execution(info, buffs);
-		return false;
-	}
-	if (ALARM)
-	{
-		print_alarm_stats(buffs, info);
-		reset_alarm();
-	}
-
-	va_end(args);
-	return true;
-}
+#include <time.h>
 
 /* Função que lê do stdin com o scanf apropriado para cada tipo de dados
  * e valida os argumentos da aplicação, incluindo o saldo inicial,
@@ -190,12 +171,6 @@ void user_interaction(struct info_container *info, struct buffers *buffs)
 	{
 		char buff[5];
 		printf("[Main] Introduzir operação: ");
-		if (alarmed)
-		{
-			print_alarm_stats(buffs);
-			reset_alarm();
-			alarmed = 0;
-		}
 		if (!safe_scanf(info, buffs, "%s", buff))
 		{
 			break;
@@ -225,10 +200,17 @@ void user_interaction(struct info_container *info, struct buffers *buffs)
 			log_format("end");
 			end_execution(info, buffs);
 		}
-		else
+		else if (!alarmed)
 		{
 			printf("[Main] Operação não reconhecida, insira 'help' para assistência.\n\n");
 		}
+		if (alarmed)
+		{
+			print_alarm_stats(info, buffs);
+			reset_alarm();
+			alarmed = false;
+		}
+
 		buff[0] = '\0';
 		nanosleep(&ts, NULL);
 	}
@@ -345,8 +327,6 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
 
 	clock_gettime(CLOCK_REALTIME, &tx.change_time.created);
 
-	// tx.change_time.created = time(0);
-
 	// SEND
 	sem_wait(info->sems->main_wallet->free_space);
 	sem_wait(info->sems->main_wallet->mutex);
@@ -361,7 +341,7 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
 	sem_post(info->sems->main_wallet->unread);
 
 	printf("[Main] A transação %d foi criada para transferir %0.2f SOT da carteira %d para a carteira %d!\n",
-				 tx.id, tx.amount, tx.src_id, tx.dest_id);
+		   tx.id, tx.amount, tx.src_id, tx.dest_id);
 }
 
 /* Tenta ler o recibo da transação (identificada por id, o qual ainda está no
@@ -407,8 +387,8 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 	else
 	{
 		printf("[Main] O comprovativo da execução %d foi obtido.\n"
-					 "[Main] O comprovativo da transação id %d contém src_id %d, dest_id %d, amount %0.2f e foi assinado pela carteira %d e servidor %d.\n\n",
-					 tx.id, tx.id, tx.src_id, tx.dest_id, tx.amount, tx.wallet_signature, tx.wallet_signature);
+			   "[Main] O comprovativo da transação id %d contém src_id %d, dest_id %d, amount %0.2f e foi assinado pela carteira %d e servidor %d.\n\n",
+			   tx.id, tx.id, tx.src_id, tx.dest_id, tx.amount, tx.wallet_signature, tx.wallet_signature);
 	}
 }
 
@@ -420,24 +400,24 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 void print_stat(int tx_counter, struct info_container *info)
 {
 	printf("- Configuração inicial:\n"
-				 "        Propriedade     Valor\n"
-				 "        init_balance    %0.2f\n"
-				 "        n_wallets       %d\n"
-				 "        n_servers       %d\n"
-				 "        buffers_size:   %d\n"
-				 "        max_txs         %d\n"
-				 "- Variáveis atuais:\n"
-				 "        terminate       %d\n"
-				 "        tx_count:       %d\n"
-				 "- Informação sobre as carteiras:\n"
-				 "        Carteira        PID             Saldo           Transações Assinadas\n",
-				 info->init_balance,
-				 info->n_wallets,
-				 info->n_servers,
-				 info->buffers_size,
-				 info->max_txs,
-				 read_terminate(info),
-				 tx_counter);
+		   "        Propriedade     Valor\n"
+		   "        init_balance    %0.2f\n"
+		   "        n_wallets       %d\n"
+		   "        n_servers       %d\n"
+		   "        buffers_size:   %d\n"
+		   "        max_txs         %d\n"
+		   "- Variáveis atuais:\n"
+		   "        terminate       %d\n"
+		   "        tx_count:       %d\n"
+		   "- Informação sobre as carteiras:\n"
+		   "        Carteira        PID             Saldo           Transações Assinadas\n",
+		   info->init_balance,
+		   info->n_wallets,
+		   info->n_servers,
+		   info->buffers_size,
+		   info->max_txs,
+		   read_terminate(info),
+		   tx_counter);
 	log_format("stat %d", tx_counter);
 
 	char SOT_str[64];
@@ -446,10 +426,10 @@ void print_stat(int tx_counter, struct info_container *info)
 	{
 		sprintf(SOT_str, "%.2f SOT", info->balances[i]);
 		printf("        %-10d      %-10d      %-15s %d\n",
-					 i, info->wallets_pids[i], SOT_str, info->wallets_stats[i]);
+			   i, info->wallets_pids[i], SOT_str, info->wallets_stats[i]);
 	}
 	printf("- Informação sobre os servidores:\n"
-				 "        Servidor        PID             Transações Processadas\n");
+		   "        Servidor        PID             Transações Processadas\n");
 	for (int i = 0; i < info->n_servers; i++)
 	{
 		printf("        %-10d      %-10d      %d\n", i, info->servers_pids[i], info->servers_stats[i]);
@@ -462,11 +442,11 @@ void print_stat(int tx_counter, struct info_container *info)
 void help()
 {
 	printf("[Main] Operações disponíveis:\n"
-				 "[Main]  bal id - consultar o saldo da carteira identificada por id.\n"
-				 "[Main]  trx src_id dest_id amount - criar uma nova transação.\n"
-				 "[Main]  rcp id - obter o comprovativo da transação de número id.\n"
-				 "[Main]  help - imprime a informação sobre as operações disponíveis.\n"
-				 "[Main]  end - termina a execução do SOchain.\n\n");
+		   "[Main]  bal id - consultar o saldo da carteira identificada por id.\n"
+		   "[Main]  trx src_id dest_id amount - criar uma nova transação.\n"
+		   "[Main]  rcp id - obter o comprovativo da transação de número id.\n"
+		   "[Main]  help - imprime a informação sobre as operações disponíveis.\n"
+		   "[Main]  end - termina a execução do SOchain.\n\n");
 	log_format("help");
 }
 
@@ -528,7 +508,7 @@ void wake_up_processes(struct info_container *info)
 
 // PRIVATE
 
-bool safe_scanf(struct info_container *info, struct buffers *buffs, const char *format, ...)
+static bool safe_scanf(struct info_container *info, struct buffers *buffs, const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -542,7 +522,7 @@ bool safe_scanf(struct info_container *info, struct buffers *buffs, const char *
 	}
 	if (get_alarm())
 	{
-		alarmed = 1;
+		alarmed = true;
 	}
 
 	va_end(args);

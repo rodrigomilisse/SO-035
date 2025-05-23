@@ -11,6 +11,6 @@
 
 bool alarmed = false;
 
-bool safe_scanf(struct info_container *info, struct buffers *buffs, const char *format, ...);
+static bool safe_scanf(struct info_container *info, struct buffers *buffs, const char *format, ...);
 
 #endif
