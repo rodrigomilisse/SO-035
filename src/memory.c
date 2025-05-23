@@ -145,6 +145,11 @@ void read_main_wallets_buffer(struct ra_buffer *buffer, int wallet_id, int buffe
  */
 void read_wallets_servers_buffer(struct circ_buffer *buffer, int buffer_size, struct transaction *tx)
 {
+	if (buffer->ptrs->in == buffer->ptrs->out)
+	{
+		tx->id = -1;
+		return;
+	}
 	*tx = buffer->buffer[buffer->ptrs->out++];
 	buffer->ptrs->out %= buffer_size;
 }

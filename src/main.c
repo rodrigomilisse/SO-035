@@ -5,7 +5,7 @@
 #include "main.h"
 #include "memory.h"
 #include "process.h"
-#include "ctime-private.h"
+#include "ctime.h"
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
@@ -31,7 +31,7 @@ bool safe_scanf(struct info_container *info, struct buffers *buffs, const char *
 	}
 	if (ALARM)
 	{
-		print_alarm_stats(buffs);
+		print_alarm_stats(buffs, info);
 		reset_alarm();
 	}
 
@@ -115,6 +115,10 @@ void create_shared_memory_structs(struct info_container *info, struct buffers *b
 	buffs->buff_servers_main->ptrs = create_shared_memory(ID_SHM_SERVERS_MAIN_PTR, sizeof(int) * info->buffers_size);
 
 	buffs->buff_wallets_servers->buffer = create_shared_memory(ID_SHM_WALLETS_SERVERS_BUFFER, sizeof(struct transaction) * info->buffers_size);
+	for (int i = 0; i < info->buffers_size; i++)
+	{
+		buffs->buff_wallets_servers->buffer[i].id = -1;
+	}
 	buffs->buff_wallets_servers->ptrs = create_shared_memory(ID_SHM_WALLETS_SERVERS_PTR, sizeof(struct pointers));
 }
 
@@ -181,9 +185,8 @@ void user_interaction(struct info_container *info, struct buffers *buffs)
 	int tx_counter = 0;
 
 	reset_alarm();
-	while (!*info->terminate)
+	while (!read_terminate(info))
 	{
-
 		char buff[5];
 		printf("[Main] Introduzir operação: ");
 		if (!safe_scanf(info, buffs, "%s", buff))
@@ -223,6 +226,7 @@ void user_interaction(struct info_container *info, struct buffers *buffs)
 		{
 			printf("[Main] Operação não reconhecida, insira 'help' para assistência.\n\n");
 		}
+		buff[0] = '\0';
 		nanosleep(&ts, NULL);
 	}
 }
@@ -251,7 +255,10 @@ void write_final_statistics(struct info_container *info)
  */
 void end_execution(struct info_container *info, struct buffers *buffs)
 {
+	// printf("[Debug] A terminar a execução do SOchain!\n");
+	sem_wait(info->sems->terminate_mutex);
 	*info->terminate = 1;
+	sem_post(info->sems->terminate_mutex);
 	wait_processes(info);
 	write_final_statistics(info);
 	write_stats(info, buffs);
@@ -318,7 +325,7 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
 	{
 		return;
 	}
-	tx.id = ++(*tx_counter);
+	tx.id = (*tx_counter)++;
 
 	log_format("trx %d %d %f", tx.src_id, tx.dest_id, tx.amount);
 
@@ -333,13 +340,15 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
 		return;
 	}
 
-	tx.change_time.created = time(0);
+	clock_gettime(CLOCK_REALTIME, &tx.change_time.created);
+
+	// tx.change_time.created = time(0);
 
 	// SEND
 	sem_wait(info->sems->main_wallet->free_space);
 	sem_wait(info->sems->main_wallet->mutex);
 
-	if (*info->terminate)
+	if (read_terminate(info))
 	{
 		return;
 	}
@@ -349,7 +358,7 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
 	sem_post(info->sems->main_wallet->unread);
 
 	printf("[Main] A transação %d foi criada para transferir %0.2f SOT da carteira %d para a carteira %d!\n",
-		   tx.id, tx.amount, tx.src_id, tx.dest_id);
+				 tx.id, tx.amount, tx.src_id, tx.dest_id);
 }
 
 /* Tenta ler o recibo da transação (identificada por id, o qual ainda está no
@@ -366,7 +375,6 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 		return;
 	}
 
-	printf("\n tx_id: %d\n\n", tx.id);
 	log_format("rcp %d", id);
 
 	// RECEIVE
@@ -377,7 +385,6 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 	}
 
 	sem_wait(info->sems->server_main->mutex);
-	printf("\n tx_id: %d\n\n", tx.id);
 
 	if (*info->terminate)
 	{
@@ -386,7 +393,6 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 
 	read_servers_main_buffer(buffs->buff_servers_main, id, info->buffers_size, &tx);
 
-	printf("\n tx_id: %d\n\n", tx.id);
 	sem_post(info->sems->server_main->mutex);
 	sem_post(info->sems->server_main->free_space);
 
@@ -398,8 +404,8 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 	else
 	{
 		printf("[Main] O comprovativo da execução %d foi obtido.\n"
-			   "[Main] O comprovativo da transação id %d contém src_id %d, dest_id %d, amount %0.2f e foi assinado pela carteira %d e servidor %d.\n\n",
-			   tx.id, tx.id, tx.src_id, tx.dest_id, tx.amount, tx.wallet_signature, tx.wallet_signature);
+					 "[Main] O comprovativo da transação id %d contém src_id %d, dest_id %d, amount %0.2f e foi assinado pela carteira %d e servidor %d.\n\n",
+					 tx.id, tx.id, tx.src_id, tx.dest_id, tx.amount, tx.wallet_signature, tx.wallet_signature);
 	}
 }
 
@@ -411,24 +417,24 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 void print_stat(int tx_counter, struct info_container *info)
 {
 	printf("- Configuração inicial:\n"
-		   "        Propriedade     Valor\n"
-		   "        init_balance    %0.2f\n"
-		   "        n_wallets       %d\n"
-		   "        n_servers       %d\n"
-		   "        buffers_size:   %d\n"
-		   "        max_txs         %d\n"
-		   "- Variáveis atuais:\n"
-		   "        terminate       %d\n"
-		   "        tx_count:       %d\n"
-		   "- Informação sobre as carteiras:\n"
-		   "        Carteira        PID             Saldo           Transações Assinadas\n",
-		   info->init_balance,
-		   info->n_wallets,
-		   info->n_servers,
-		   info->buffers_size,
-		   info->max_txs,
-		   *info->terminate,
-		   tx_counter);
+				 "        Propriedade     Valor\n"
+				 "        init_balance    %0.2f\n"
+				 "        n_wallets       %d\n"
+				 "        n_servers       %d\n"
+				 "        buffers_size:   %d\n"
+				 "        max_txs         %d\n"
+				 "- Variáveis atuais:\n"
+				 "        terminate       %d\n"
+				 "        tx_count:       %d\n"
+				 "- Informação sobre as carteiras:\n"
+				 "        Carteira        PID             Saldo           Transações Assinadas\n",
+				 info->init_balance,
+				 info->n_wallets,
+				 info->n_servers,
+				 info->buffers_size,
+				 info->max_txs,
+				 read_terminate(info),
+				 tx_counter);
 	log_format("stat %d", tx_counter);
 
 	char SOT_str[64];
@@ -437,10 +443,10 @@ void print_stat(int tx_counter, struct info_container *info)
 	{
 		sprintf(SOT_str, "%.2f SOT", info->balances[i]);
 		printf("        %-10d      %-10d      %-15s %d\n",
-			   i, info->wallets_pids[i], SOT_str, info->wallets_stats[i]);
+					 i, info->wallets_pids[i], SOT_str, info->wallets_stats[i]);
 	}
 	printf("- Informação sobre os servidores:\n"
-		   "        Servidor        PID             Transações Processadas\n");
+				 "        Servidor        PID             Transações Processadas\n");
 	for (int i = 0; i < info->n_servers; i++)
 	{
 		printf("        %-10d      %-10d      %d\n", i, info->servers_pids[i], info->servers_stats[i]);
@@ -453,11 +459,11 @@ void print_stat(int tx_counter, struct info_container *info)
 void help()
 {
 	printf("[Main] Operações disponíveis:\n"
-		   "[Main]  bal id - consultar o saldo da carteira identificada por id.\n"
-		   "[Main]  trx src_id dest_id amount - criar uma nova transação.\n"
-		   "[Main]  rcp id - obter o comprovativo da transação de número id.\n"
-		   "[Main]  help - imprime a informação sobre as operações disponíveis.\n"
-		   "[Main]  end - termina a execução do SOchain.\n\n");
+				 "[Main]  bal id - consultar o saldo da carteira identificada por id.\n"
+				 "[Main]  trx src_id dest_id amount - criar uma nova transação.\n"
+				 "[Main]  rcp id - obter o comprovativo da transação de número id.\n"
+				 "[Main]  help - imprime a informação sobre as operações disponíveis.\n"
+				 "[Main]  end - termina a execução do SOchain.\n\n");
 	log_format("help");
 }
 
@@ -493,7 +499,7 @@ Acorda todos os processos filhos (que estejam a dormirem sem_wait), de forma a e
  */
 void wake_up_processes(struct info_container *info)
 {
-	// TODO printf("dumping");
+	// printf("dumping\n");
 	for (int i = 0; i < info->n_wallets; i++)
 	{
 		sem_post(info->sems->main_wallet->unread);

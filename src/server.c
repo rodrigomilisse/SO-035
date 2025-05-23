@@ -4,7 +4,7 @@
 
 #include "server.h"
 #include "main.h"
-#include "ctime-private.h"
+#include "ctime.h"
 #include <unistd.h>
 #include <time.h>
 #include <stdio.h>
@@ -25,14 +25,13 @@ int execute_server(int server_id, struct info_container *info, struct buffers *b
 	int *num_txs = &info->servers_stats[server_id];
 	struct transaction tx;
 
-	while (!*info->terminate)
+	while (!read_terminate(info))
 	{
-
 		// RECEIVE
 		sem_wait(info->sems->wallet_server->unread);
 		sem_wait(info->sems->wallet_server->mutex);
 
-		if (*info->terminate)
+		if (read_terminate(info))
 		{
 			break;
 		}
@@ -54,7 +53,7 @@ int execute_server(int server_id, struct info_container *info, struct buffers *b
 		sem_wait(info->sems->server_main->free_space);
 		sem_wait(info->sems->server_main->mutex);
 
-		if (*info->terminate)
+		if (read_terminate(info))
 		{
 			break;
 		}
@@ -67,8 +66,8 @@ int execute_server(int server_id, struct info_container *info, struct buffers *b
 		if (tx.server_signature != -1)
 		{
 			printf("[Server %d] Li a transação %d do buffer e esta foi processada corretamente!\n"
-				   "[Server %d] ledger <- [tx.id %d, src_id %d, dest_id %d, amount %0.2f]\n\n",
-				   server_id, tx.id, server_id, tx.id, tx.src_id, tx.dest_id, tx.amount);
+						 "[Server %d] ledger <- [tx.id %d, src_id %d, dest_id %d, amount %0.2f]\n\n",
+						 server_id, tx.id, server_id, tx.id, tx.src_id, tx.dest_id, tx.amount);
 		}
 		else
 		{
@@ -85,7 +84,7 @@ int execute_server(int server_id, struct info_container *info, struct buffers *b
  */
 void server_receive_transaction(struct transaction *tx, struct info_container *info, struct buffers *buffs)
 {
-	if (!*info->terminate)
+	if (!read_terminate(info))
 	{
 		read_wallets_servers_buffer(buffs->buff_wallets_servers, info->buffers_size, tx);
 	}
@@ -127,7 +126,7 @@ void server_process_transaction(struct transaction *tx, int server_id, struct in
 	{
 		transfer_funds(tx, info->balances);
 		sign_transaction(tx, server_id);
-		tx->change_time.signed_by_server = time(0);
+		clock_gettime(CLOCK_REALTIME, &tx->change_time.signed_by_server);
 		(*num_txs)++;
 	}
 }

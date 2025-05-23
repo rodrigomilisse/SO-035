@@ -9,11 +9,14 @@
 
 struct timestamps
 {
-	time_t created;
-	time_t signed_by_server;
-	time_t signed_by_wallet;
+	struct timespec created;
+	struct timespec signed_by_server;
+	struct timespec signed_by_wallet;
 };
 
 char *get_timestamp();
+
+#define ALGUNS_MILISSEGUNDOS (long)3 * 1000000
+extern const struct timespec ts;
 
 #endif

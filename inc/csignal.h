@@ -19,7 +19,7 @@ void alarm_handler(int);
 
 void reset_alarm();
 
-void print_alarm_stats(struct buffers *buffs);
+void print_alarm_stats(struct buffers *buffs, struct info_container *info);
 
 void init_signal_handlers();
 

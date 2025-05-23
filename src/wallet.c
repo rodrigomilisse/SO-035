@@ -6,10 +6,11 @@
 #include "memory.h"
 #include "main.h"
 #include "server.h"
-#include "ctime-private.h"
+#include "ctime.h"
 #include <time.h>
 #include <stdio.h>
 #include "synchronization.h"
+#include "synchronization-private.h"
 
 /* Função principal de uma carteira. Deve executar um ciclo infinito onde,
  * em cada iteração, lê uma transação da main apenas caso o src_id da transação seja
@@ -22,16 +23,17 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
 {
 	int *num_txs = &info->wallets_stats[wallet_id];
 	struct transaction tx;
-	while (!*info->terminate)
+	while (!read_terminate(info))
 	{
 		// RECEIVE
 		sem_wait(info->sems->main_wallet->unread);
 		sem_wait(info->sems->main_wallet->mutex);
 
-		if (*info->terminate)
+		if (read_terminate(info))
 		{
 			break;
 		}
+
 		wallet_receive_transaction(&tx, wallet_id, info, buffs);
 
 		sem_post(info->sems->main_wallet->mutex);
@@ -50,7 +52,7 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
 		sem_wait(info->sems->wallet_server->free_space);
 		sem_wait(info->sems->wallet_server->mutex);
 
-		if (*info->terminate)
+		if (read_terminate(info))
 		{
 			break;
 		}
@@ -72,7 +74,7 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
  */
 void wallet_receive_transaction(struct transaction *tx, int wallet_id, struct info_container *info, struct buffers *buffs)
 {
-	if (!*info->terminate)
+	if (!read_terminate(info))
 	{
 		read_main_wallets_buffer(buffs->buff_main_wallets, wallet_id, info->buffers_size, tx);
 	}
@@ -91,7 +93,7 @@ void wallet_process_transaction(struct transaction *tx, int wallet_id, struct in
 {
 	int *num_txs = &info->wallets_stats[wallet_id];
 	sign_transaction(tx, wallet_id);
-	tx->change_time.signed_by_wallet = time(0);
+	clock_gettime(CLOCK_REALTIME, &tx->change_time.signed_by_wallet);
 	(*num_txs)++;
 }
 

@@ -28,4 +28,6 @@
 
 void sem_print(sem_t *sem, char *name);
 
+int read_terminate(struct info_container *info);
+
 #endif // PRIVATE

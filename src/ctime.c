@@ -3,7 +3,6 @@
  */
 
 #include "ctime.h"
-#include "ctime-private.h"
 #include "csettings.h"
 #include <time.h>
 #include <stdio.h>
