@@ -91,26 +91,14 @@ void write_main_wallets_buffer(struct ra_buffer *buffer, int buffer_size, struct
 	}
 }
 
-bool isFull(struct circ_buffer *buffer, int buffer_size)
-{
-	return (buffer->ptrs->in + 1) % buffer_size == buffer->ptrs->out;
-}
-bool isEmpty(struct circ_buffer *buffer)
-{
-	return buffer->ptrs->in == buffer->ptrs->out;
-}
-
 /* Função que escreve uma transação no buffer de memória partilhada entre as carteiras e os servidores.
  * A transação deve ser escrita numa posição livre do buffer, tendo em conta o tipo de buffer
  * e as regras de escrita em buffers desse tipo. Se não houver nenhuma posição livre, não escreve nada.
  */
 void write_wallets_servers_buffer(struct circ_buffer *buffer, int buffer_size, struct transaction *tx)
 {
-	if (!isFull(buffer, buffer_size))
-	{
-		buffer->buffer[buffer->ptrs->in++] = *tx;
-		buffer->ptrs->in %= buffer_size;
-	}
+	buffer->buffer[buffer->ptrs->in++] = *tx;
+	buffer->ptrs->in %= buffer_size;
 }
 
 /* Função que escreve uma transação no buffer de memória partilhada entre os servidores e a Main, a qual
@@ -157,15 +145,8 @@ void read_main_wallets_buffer(struct ra_buffer *buffer, int wallet_id, int buffe
  */
 void read_wallets_servers_buffer(struct circ_buffer *buffer, int buffer_size, struct transaction *tx)
 {
-	if (!isEmpty(buffer))
-	{
-		*tx = buffer->buffer[buffer->ptrs->out++];
-		buffer->ptrs->out %= buffer_size;
-	}
-	else
-	{
-		tx->id = -1;
-	}
+	*tx = buffer->buffer[buffer->ptrs->out++];
+	buffer->ptrs->out %= buffer_size;
 }
 
 /* Função que lê uma transação do buffer entre os servidores e a Main, se houver alguma disponível para ler
