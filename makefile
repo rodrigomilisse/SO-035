@@ -4,7 +4,7 @@
 
 .RECIPEPREFIX = >
 
-OBJ_FILES = main.o memory.o process.o server.o wallet.o csignal.o clog.o csettings.o cstats.o ctime.o synchronization.o private.o
+OBJ_FILES = main.o memory.o process.o server.o wallet.o csignal.o clog.o csettings.o cstats.o ctime.o synchronization.o
 OBJ_PATHS = $(addprefix $(OBJ_DIR)/,$(OBJ_FILES))
 INC_DIR = inc
 SRC_DIR = src

@@ -5,13 +5,14 @@
 #include "main.h"
 #include "memory.h"
 #include "process.h"
+#include "ctime-private.h"
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
 #include "synchronization.h"
 #include "csignal.h"
 #include "csettings.h"
-#include "private.h"
+#include "synchronization-private.h"
 #include "cstats.h"
 #include "clog.h"
 #include <stdarg.h>

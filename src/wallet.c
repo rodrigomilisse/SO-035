@@ -6,10 +6,10 @@
 #include "memory.h"
 #include "main.h"
 #include "server.h"
+#include "ctime-private.h"
 #include <time.h>
 #include <stdio.h>
 #include "synchronization.h"
-#include "private.h"
 
 /* Função principal de uma carteira. Deve executar um ciclo infinito onde,
  * em cada iteração, lê uma transação da main apenas caso o src_id da transação seja

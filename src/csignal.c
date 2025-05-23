@@ -40,7 +40,7 @@ void reset_alarm()
 
 void print_alarm_stats(struct buffers *buffs)
 {
-	printf("ALARM");
+	printf("\nALARM\n");
 }
 
 void init_signal_handlers()

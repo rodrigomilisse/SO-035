@@ -5,7 +5,6 @@
 #ifndef CSIGNAL_H_GUARD
 #define CSIGNAL_H_GUARD
 
-#define _POSIX_C_SOURCE 200809L // TODO necessario?
 #include <signal.h>
 #include "csettings.h"
 #include <stdbool.h>

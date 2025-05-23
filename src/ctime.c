@@ -2,9 +2,10 @@
  * Membros: Francisco Lima: nº 61864, Márcio Caetano nº 61799
  */
 
-#include <time.h>
 #include "ctime.h"
+#include "ctime-private.h"
 #include "csettings.h"
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
@@ -29,3 +30,7 @@ char *get_timestamp()
 	snprintf(finaltime, 80, "%s.%03ld", buffer, rawtime % 1000);
 	return finaltime;
 }
+
+// PRIVATE
+
+const struct timespec ts = {.tv_sec = 0, .tv_nsec = ALGUNS_MILISSEGUNDOS};

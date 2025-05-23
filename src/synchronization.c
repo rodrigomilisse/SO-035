@@ -3,11 +3,11 @@
  */
 
 #include "synchronization.h"
+#include "synchronization-private.h"
 #include "memory.h"
 #include <semaphore.h> //sem_t
 #include <fcntl.h>	   /* For O_* constants */
 #include <sys/stat.h>  /* For mode constants */
-#include "private.h"
 
 /* Função que cria *um* semaforo , inicializado a <value> */
 sem_t *create_semaphore(char *name, unsigned v)
@@ -122,4 +122,12 @@ struct triplet_sems *create_server_main_sems(unsigned v)
 							   SERVER_MAIN_SEM_NAME FREE_SPACE_SUFFIX,
 							   SERVER_MAIN_SEM_NAME UNREAD_SUFFIX,
 							   SERVER_MAIN_SEM_NAME MUTEX_SUFFIX);
+}
+
+// PRIVATE
+void sem_print(sem_t *sem, char *name)
+{
+	int val;
+	sem_getvalue(sem, &val);
+	printf("%s: %d\n", name, val);
 }

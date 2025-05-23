@@ -2,8 +2,8 @@
  * Membros: Francisco Lima: nº 61864, Márcio Caetano nº 61799
  */
 
-#ifndef PRIVATE
-#define PRIVATE
+#ifndef SYNCHRONIZATION_PRIVATE_H_GUARD
+#define SYNCHRONIZATION_PRIVATE_H_GUARD
 
 #include "main.h"
 #include "memory.h"
@@ -25,9 +25,6 @@
 #define TERMINATE_MUTEX_NAME "/terminate_mutex"
 
 #define TERMINATE_MUTEX_SEM_NAME "/terminate_sem_mutex"
-
-#define ALGUNS_MILISSEGUNDOS (long)3 * 1000000
-extern const struct timespec ts;
 
 void sem_print(sem_t *sem, char *name);
 
