@@ -3,6 +3,7 @@
  */
 
 #include "main.h"
+#include "main-private.h"
 #include "memory.h"
 #include "process.h"
 #include "ctime-private.h"
@@ -18,27 +19,6 @@
 #include <stdarg.h>
 #include <errno.h>
 
-bool safe_scanf(struct info_container *info, struct buffers *buffs, const char *format, ...)
-{
-	va_list args;
-	va_start(args, format);
-
-	vscanf(format, args);
-	if (TERMINATE)
-	{
-		end_execution(info, buffs);
-		return false;
-	}
-	if (ALARM)
-	{
-		print_alarm_stats(buffs);
-		reset_alarm();
-	}
-
-	va_end(args);
-	return true;
-}
-
 /* Função que lê do stdin com o scanf apropriado para cada tipo de dados
  * e valida os argumentos da aplicação, incluindo o saldo inicial,
  * o número de carteiras, o número de servidores, o tamanho dos buffers
@@ -53,15 +33,15 @@ void main_args(int argc, char *argv[], struct info_container *info)
 	}
 	if (init_args(info, argv[1]))
 	{
-		printf("[Main] Valores Incorretos! Exemplo de uso:\n");
-		printf("100.0\n5\n2\n5\n5\n");
+		printf("[Main] Valores Incorretos! Exemplo de uso:\n"
+			   "100.0\n5\n2\n5\n5\n");
 		exit(1);
 	}
 
 	if (init_settings(argv[2]))
 	{
-		printf("[Main] Valores Incorretos! Exemplo de uso:\n");
-		printf("log.txt\nstats.txt\n10\n");
+		printf("[Main] Valores Incorretos! Exemplo de uso:\n"
+			   "log.txt\nstats.txt\n10\n");
 		exit(1);
 	}
 
@@ -186,6 +166,12 @@ void user_interaction(struct info_container *info, struct buffers *buffs)
 
 		char buff[5];
 		printf("[Main] Introduzir operação: ");
+		if (alarmed)
+		{
+			print_alarm_stats(buffs);
+			reset_alarm();
+			alarmed = 0;
+		}
 		if (!safe_scanf(info, buffs, "%s", buff))
 		{
 			break;
@@ -214,10 +200,6 @@ void user_interaction(struct info_container *info, struct buffers *buffs)
 		{
 			log_format("end");
 			end_execution(info, buffs);
-		}
-		else if (info->terminate || !strcmp("", buff))
-		{
-			printf("\n\n"); // TODO
 		}
 		else
 		{
@@ -471,14 +453,15 @@ int main(int argc, char *argv[])
 	// init data structures
 	struct info_container *info = allocate_dynamic_memory(sizeof(struct info_container));
 	struct buffers *buffs = allocate_dynamic_memory(sizeof(struct buffers));
-	init_signal_handlers();
 
 	// execute main code
 	main_args(argc, argv, info);
 	create_dynamic_memory_structs(info, buffs);
 	create_shared_memory_structs(info, buffs);
 	create_processes(info, buffs);
+	init_signal_handlers();
 	user_interaction(info, buffs);
+
 	// release memory before terminating
 	destroy_shared_memory_structs(info, buffs);
 	destroy_dynamic_memory_structs(info, buffs);
@@ -514,4 +497,27 @@ void wake_up_processes(struct info_container *info)
 
 	sem_post(info->sems->main_wallet->free_space);
 	sem_post(info->sems->main_wallet->mutex);
+}
+
+// PRIVATE
+
+bool safe_scanf(struct info_container *info, struct buffers *buffs, const char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+
+	vscanf(format, args);
+	if (get_terminate())
+	{
+		printf("\n");
+		end_execution(info, buffs);
+		return false;
+	}
+	if (get_alarm())
+	{
+		alarmed = 1;
+	}
+
+	va_end(args);
+	return true;
 }

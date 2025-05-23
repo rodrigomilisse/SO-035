@@ -17,7 +17,7 @@ void log_format(const char *message, ...)
 	char buffer[1024];
 	vsprintf(buffer, message, argp);
 
-	FILE *file = fopen(get_settings()->log_file, "a");
+	FILE *file = fopen(get_settings().log_file, "a");
 	if (file == NULL)
 	{
 		perror("Error opening log file");

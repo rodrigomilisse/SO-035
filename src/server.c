@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <stdio.h>
-#include <stdbool.h>
+// #include <stdbool.h>
 #include "synchronization.h"
 #include "synchronization-private.h"
 
@@ -67,8 +67,10 @@ int execute_server(int server_id, struct info_container *info, struct buffers *b
 		if (tx.server_signature != -1)
 		{
 			printf("[Server %d] Li a transação %d do buffer e esta foi processada corretamente!\n"
-				   "[Server %d] ledger <- [tx.id %d, src_id %d, dest_id %d, amount %0.2f]\n\n",
-				   server_id, tx.id, server_id, tx.id, tx.src_id, tx.dest_id, tx.amount);
+				   // LEDGER REDIRECIONADO
+				   //"[Server %d] ledger <- [tx.id %d, src_id %d, dest_id %d, amount %0.2f]\n\n"
+				   ,
+				   server_id, tx.id);
 		}
 		else
 		{
