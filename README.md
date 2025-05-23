@@ -72,17 +72,6 @@ SOCHAIN/
 └── README.md
 ```
 
-# TODOS:
-
-- [x] sincronização: early terminate on scanf
-- [x] use new main
-- [x] finish settings.txt
-- [x] Temporização
-- [x] Log Files
-- [x] Alarmes
-- [x] Mudar `ctime.c` para usar `clock_gettime`
-- [x] Verificar que wallet existe em bal/trx
-
 ### **Autores**
 
 Francisco Lima: nº 61864, Márcio Caetano nº 61799
