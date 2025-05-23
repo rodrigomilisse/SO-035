@@ -169,11 +169,17 @@ void user_interaction(struct info_container *info, struct buffers *buffs)
 	reset_alarm();
 	while (!read_terminate(info))
 	{
-		char buff[5];
+		if (alarmed)
+		{
+			print_alarm_stats(info, buffs);
+			alarmed = false;
+		}
+
 		printf("[Main] Introduzir operação: ");
+		char buff[5];
 		if (!safe_scanf(info, buffs, "%s", buff))
 		{
-			break;
+			continue;
 		}
 		else if (!strcmp("bal", buff))
 		{
@@ -200,15 +206,9 @@ void user_interaction(struct info_container *info, struct buffers *buffs)
 			log_format("end");
 			end_execution(info, buffs);
 		}
-		else if (!alarmed)
+		else
 		{
 			printf("[Main] Operação não reconhecida, insira 'help' para assistência.\n\n");
-		}
-		if (alarmed)
-		{
-			print_alarm_stats(info, buffs);
-			reset_alarm();
-			alarmed = false;
 		}
 
 		buff[0] = '\0';
@@ -514,15 +514,17 @@ static bool safe_scanf(struct info_container *info, struct buffers *buffs, const
 	va_start(args, format);
 
 	vscanf(format, args);
+	if (get_alarm())
+	{
+		reset_alarm();
+		alarmed = true;
+		return false;
+	}
 	if (get_terminate())
 	{
 		printf("\n");
 		end_execution(info, buffs);
 		return false;
-	}
-	if (get_alarm())
-	{
-		alarmed = true;
 	}
 
 	va_end(args);
