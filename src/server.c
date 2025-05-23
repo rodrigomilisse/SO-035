@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <stdio.h>
-#include <stdbool.h>
+// #include <stdbool.h>
 #include "synchronization.h"
 #include "synchronization-private.h"
 

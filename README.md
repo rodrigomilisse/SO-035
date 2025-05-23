@@ -16,19 +16,6 @@
 
 1. **Formatação do Saldo e Transações Assinadas no comando `stat`**: A formatação do comando pode ficar distorcida quando o **Saldo** ou o número de **Transações Assinadas** for muito alto. Considerar ajustes na formatação para suportar grandes valores de forma legível.
 
-<<<<<<< HEAD
-### **Configarações do `.vscode`**
-
-```json
-{
-  "configurations": [
-    {
-      "name": "Linux",
-      "includePath": ["${workspaceFolder}/inc"]
-    }
-  ],
-  "version": 4
-=======
 ### **`.vscode/c_cpp_properties.json`**
 ```json
 {
@@ -51,10 +38,9 @@
 ```
 
 ### **Estrutura de Ficheiros**
-
 ```
 SOCHAIN/
-├── inc/            # Header files (.h)
+├── inc/         		# Header files (.h)
 │   ├── clog.h
 │   ├── csettings.h
 │   ├── csignal.h
@@ -94,4 +80,9 @@ SOCHAIN/
 - [x] Temporização
 - [x] Log Files
 - [ ] Alarmes
+- [ ] Mudar `ctime.c` para usar `clock_gettime`
 - [x] Verificar que wallet existe em bal/trx
+
+### **Autores**
+
+Francisco Lima: nº 61864, Márcio Caetano nº 61799

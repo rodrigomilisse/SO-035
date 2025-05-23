@@ -19,6 +19,6 @@ struct settings
 int init_settings(char *filename);
 int init_args(struct info_container *info, char *filename);
 
-struct settings *get_settings();
+struct settings get_settings();
 
 #endif

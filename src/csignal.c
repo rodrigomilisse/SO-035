@@ -18,6 +18,16 @@
 bool TERMINATE;
 bool ALARM;
 
+bool get_terminate()
+{
+	return TERMINATE;
+}
+
+bool get_alarm()
+{
+	return ALARM;
+}
+
 struct sigaction sa_SIGINT = {.sa_handler = &interrupt_handler};
 
 struct sigaction sa_SIGALARM = {.sa_handler = &alarm_handler};
@@ -39,7 +49,7 @@ void alarm_handler(int signum)
 void reset_alarm()
 {
 	ALARM = 0;
-	alarm(get_settings()->period);
+	alarm(get_settings().period);
 }
 
 void print_alarm_stats(struct buffers *buffs, struct info_container *info)

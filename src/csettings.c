@@ -45,7 +45,7 @@ int init_args(struct info_container *info, char *filename)
 	return 0;
 }
 
-struct settings *get_settings()
+struct settings get_settings()
 {
-	return &settings;
+	return settings;
 }

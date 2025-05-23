@@ -9,9 +9,9 @@
 #include "csettings.h"
 #include <stdbool.h>
 
-extern bool TERMINATE;
+bool get_terminate();
 
-extern bool ALARM;
+bool get_alarm();
 
 void interrupt_handler(int);
 
