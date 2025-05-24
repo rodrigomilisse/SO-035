@@ -13,6 +13,11 @@ int init_settings(char *filename)
 {
 	// printf("Initializing settings... %s\n", filename);
 	FILE *file = fopen(filename, "r");
+	if (file == NULL)
+	{
+		perror("Error opening settings file");
+		return 1;
+	}
 
 	if (fscanf(file, "%s %s %d", settings.log_file, settings.stats_file, &settings.period) != 3)
 	{
@@ -30,12 +35,12 @@ int init_args(struct info_container *info, char *filename)
 	FILE *file = fopen(filename, "r");
 	if (file == NULL)
 	{
-		perror("Error opening file");
+		perror("Error opening args file");
 		return 1;
 	}
 	if (fscanf(file, "%f %d %d %d %d", &info->init_balance, &info->n_wallets, &info->n_servers, &info->buffers_size, &info->max_txs) != 5)
 	{
-		perror("Error reading settings");
+		perror("Error reading args");
 		fclose(file);
 		return 1;
 	}

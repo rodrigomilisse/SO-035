@@ -1,3 +1,0 @@
-log.txt
-stats.txt
-10

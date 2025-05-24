@@ -2,10 +2,21 @@
 
 ### **Compilação**
 
-1. **`make`**: Compila o projeto.
-2. **`make re`**: Recompila o projeto.
-3. **`make run`**: Recompila e executa o programa com argumentos predefinidos no `Makefile` (args.txt settings.txt).
-4. **`make prof`**: Executa a versão fornecida pelos professores.
+- **`make`**
+  Compila o projeto.
+
+- **`make re`**
+  Recompila o projeto (limpa e compila novamente).
+
+- **`make run`**
+  Recompila e executa o programa com argumentos predefinidos.
+  	- Usa os ficheiros `args.txt` e `settings.txt` para definir os argumentos.
+	- Se `args.txt`, `settings.txt`, `log.txt` ou `stats.txt` já existirem, são usados tal como estão, sem alterações.
+	- Caso contrário, estes ficheiros são criados automaticamente com valores predefinidos para garantir a execução correta.
+
+- **`make prof`**
+  Executa a versão fornecida pelos professores.
+
 
 ### **Dúvidas**
 
