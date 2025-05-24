@@ -2,15 +2,16 @@
  * Membros: Francisco Lima: nº 61864, Marcio Caetano nº 61799
  */
 
+#define _POSIX_C_SOURCE 200809L
 #include "wallet.h"
 #include "memory.h"
 #include "main.h"
 #include "server.h"
 #include "ctime.h"
-#include <time.h>
-#include <stdio.h>
 #include "synchronization.h"
 #include "synchronization-private.h"
+#include <time.h>
+#include <stdio.h>
 
 /* Função principal de uma carteira. Deve executar um ciclo infinito onde,
  * em cada iteração, lê uma transação da main apenas caso o src_id da transação seja

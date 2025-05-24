@@ -5,15 +5,15 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include "csignal.h"
-#include <signal.h>
-#include <stdbool.h>
-#include "csettings.h"
-#include <unistd.h>
-#include <stdio.h>
-#include "memory.h"
-#include "main.h"
 #include "synchronization.h"
 #include "synchronization-private.h"
+#include "main.h"
+#include "memory.h"
+#include "csettings.h"
+#include <signal.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <stdio.h>
 
 bool TERMINATE;
 bool ALARM;

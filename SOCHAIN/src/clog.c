@@ -2,13 +2,12 @@
  * Membros: Francisco Lima: nº 61864, Márcio Caetano nº 61799
  */
 
+#include "clog.h"
+#include "csettings.h"
+#include "ctime.h"
 #include <stdlib.h>
 #include <stdarg.h>
-
 #include <stdio.h>
-#include "csettings.h"
-#include "clog.h"
-#include "ctime.h"
 
 void log_format(const char *message, ...)
 {

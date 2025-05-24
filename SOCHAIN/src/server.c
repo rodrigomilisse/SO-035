@@ -6,13 +6,13 @@
 #include "server.h"
 #include "main.h"
 #include "ctime.h"
+#include "synchronization.h"
+#include "synchronization-private.h"
+#include "server-private.h"
 #include <unistd.h>
 #include <time.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include "synchronization.h"
-#include "synchronization-private.h"
-#include "server-private.h"
 
 /* Função principal de um servidor. Deve executar um ciclo infinito onde, em
  * cada iteração, lê uma transação do buffer de memória partilhada entre as carteiras e os servidores.

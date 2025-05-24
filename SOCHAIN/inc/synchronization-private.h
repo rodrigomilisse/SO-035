@@ -8,12 +8,12 @@
 #include "main.h"
 #include "memory.h"
 #include "process.h"
-#include <string.h>
-#include <stdio.h>
-#include <time.h>
 #include "synchronization.h"
 #include "csignal.h"
 #include "csettings.h"
+#include <string.h>
+#include <stdio.h>
+#include <time.h>
 
 #define SEMS_NAME "sems"
 #define MAIN_WALLET_SEM_NAME "/main_wallet"

@@ -2,11 +2,10 @@
  * Membros: Francisco Lima: nº 61864, Márcio Caetano nº 61799
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "csettings.h"
 #include "main.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 static struct settings settings;
 

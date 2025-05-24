@@ -8,17 +8,16 @@
 #include "memory.h"
 #include "process.h"
 #include "ctime.h"
-#include <string.h>
-#include <stdio.h>
 #include "synchronization.h"
 #include "csignal.h"
 #include "csettings.h"
 #include "synchronization-private.h"
 #include "cstats.h"
 #include "clog.h"
+#include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 #include <errno.h>
-
 #include <time.h>
 
 /* Função que lê do stdin com o scanf apropriado para cada tipo de dados
@@ -296,9 +295,9 @@ void create_transaction(int *tx_counter, struct info_container *info, struct buf
 {
 	if (info->max_txs == *tx_counter + 1)
 	{
-		int flush_STDIN[3];
-		if (!safe_scanf(info, buffs, "%d %d %f", &flush_STDIN[0], &flush_STDIN[1], (float *)&flush_STDIN[2]))
+		if (!safe_scanf(info, buffs, "%d %d %f", &(int){0}, &(int){0}, &(float){0}))
 		{
+			// FLUSHED STDIN
 			return;
 		}
 		printf("[Main] O número máximo de transações foi alcançado!\n\n");
