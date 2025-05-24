@@ -1,3 +1,6 @@
+### **Autores**
+Francisco Lima: nº 61864, Márcio Caetano nº 61799
+
 ## SO-035 – Projeto de Sistemas Operativos
 
 ### **Compilação**
@@ -16,7 +19,6 @@
 
 - **`make prof`**
   Executa a versão fornecida pelos professores.
-
 
 ### **Dúvidas**
 
@@ -83,7 +85,3 @@ SOCHAIN/
 .vscode/c_cpp_properties.json
 README.md
 ```
-
-### **Autores**
-
-Francisco Lima: nº 61864, Márcio Caetano nº 61799

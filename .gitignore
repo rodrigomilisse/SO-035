@@ -1,3 +1,8 @@
-#SOCHAIN/bin/
-#SOCHAIN/obj/
+SOCHAIN/bin/
+SOCHAIN/obj/
+SOCHAIN/args.txt
+SOCHAIN/log.txt
+SOCHAIN/settings.txt
+SOCHAIN/stats.txt
+SOCHAIN/log.txt
 .vscode/

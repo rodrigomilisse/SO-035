@@ -183,6 +183,12 @@ void user_interaction(struct info_container *info, struct buffers *buffs)
 		else if (!strcmp("bal", buff))
 		{
 			print_balance(info);
+			// Evitar segfault quando interrupt é enviado enquanto se lê a carteira para imprimir o saldo
+			// porque a função print balance não recebe buffs
+			if (get_interrupt(info))
+			{
+				end_execution(info, buffs);
+			}
 		}
 		else if (!strcmp("trx", buff))
 		{
@@ -368,7 +374,7 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 
 	sem_wait(info->sems->server_main->mutex);
 
-	if (*info->terminate)
+	if (read_terminate(info))
 	{
 		return;
 	}
@@ -522,6 +528,12 @@ static bool safe_scanf(struct info_container *info, struct buffers *buffs, const
 	if (get_interrupt())
 	{
 		printf("\n");
+		if (buffs == NULL)
+		{
+			// Evitar segfault quando interrupt é enviado enquanto se lê a carteira para imprimir o saldo
+			// porque a função print balance não recebe buffs
+			return true;
+		}
 		end_execution(info, buffs);
 		return false;
 	}
