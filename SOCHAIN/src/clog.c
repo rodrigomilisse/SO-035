@@ -9,6 +9,9 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+/*
+ * Escreve o comando executado no log file com o timestamp atual
+ */
 void log_format(const char *message, ...)
 {
 	va_list argp;

@@ -16,7 +16,14 @@ struct settings
 	int period;
 };
 
+/**
+ * Extrai as definições do programa a partir do ficheiro cujo caminho é especificado
+ */
 int init_settings(char *filename);
+
+/*
+ * Extrai os argumentos do programa a partir do ficheiro cujo caminho é especificado
+ */
 int init_args(struct info_container *info, char *filename);
 
 struct settings get_settings();

@@ -8,6 +8,10 @@
 #include "main.h"
 #include "memory.h"
 
+/*
+ * Escreve as estatísticas que resumem a utilizam corrente do programa no ficheiro
+ * especificado nas definições
+ */
 void write_stats(struct info_container *info, struct buffers *buffs);
 
 #endif

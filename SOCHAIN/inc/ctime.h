@@ -14,6 +14,9 @@ struct timestamps
 	struct timespec signed_by_wallet;
 };
 
+/*
+ * Retorna o tempo atual num formato string predifinido
+ */
 char *get_timestamp();
 
 #define ALGUNS_MILISSEGUNDOS (long)3 * 1000000

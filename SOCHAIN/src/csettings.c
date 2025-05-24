@@ -9,6 +9,9 @@
 
 static struct settings settings;
 
+/**
+ * Extrai as definições do programa a partir do ficheiro cujo caminho é especificado
+ */
 int init_settings(char *filename)
 {
 	// printf("Initializing settings... %s\n", filename);
@@ -30,6 +33,9 @@ int init_settings(char *filename)
 	return 0;
 }
 
+/*
+ * Extrai os argumentos do programa a partir do ficheiro cujo caminho é especificado
+ */
 int init_args(struct info_container *info, char *filename)
 {
 	FILE *file = fopen(filename, "r");

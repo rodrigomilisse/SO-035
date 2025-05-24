@@ -26,8 +26,14 @@
 
 #define TERMINATE_MUTEX_SEM_NAME "/terminate_sem_mutex"
 
+/*
+ * Imprime o estado do semáfor especificado
+ */
 void sem_print(sem_t *sem, char *name);
 
+/*
+ * Lê a variável terminate com as verificações de sincronização necessárias
+ */
 int read_terminate(struct info_container *info);
 
 #endif // PRIVATE

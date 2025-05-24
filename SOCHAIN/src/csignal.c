@@ -15,12 +15,12 @@
 #include <unistd.h>
 #include <stdio.h>
 
-bool TERMINATE;
+bool INTERRUPT;
 bool ALARM;
 
-bool get_terminate()
+bool get_interrupt()
 {
-	return TERMINATE;
+	return INTERRUPT;
 }
 
 bool get_alarm()
@@ -34,7 +34,7 @@ struct sigaction sa_SIGALARM = {.sa_handler = &alarm_handler};
 
 void interrupt_handler(int signum)
 {
-	TERMINATE = true;
+	INTERRUPT = true;
 
 	(void)signum;
 }
@@ -48,7 +48,7 @@ void alarm_handler(int signum)
 
 void reset_alarm()
 {
-	ALARM = 0;
+	ALARM = false;
 	alarm(get_settings().period);
 }
 

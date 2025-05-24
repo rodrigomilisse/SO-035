@@ -519,7 +519,7 @@ static bool safe_scanf(struct info_container *info, struct buffers *buffs, const
 		alarmed = true;
 		return false;
 	}
-	if (get_terminate())
+	if (get_interrupt())
 	{
 		printf("\n");
 		end_execution(info, buffs);

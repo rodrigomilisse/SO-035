@@ -10,6 +10,9 @@
 #include <sys/time.h>
 #include <string.h>
 
+/*
+ * Retorna o tempo atual num formato string predifinido
+ */
 char *get_timestamp()
 {
 	time_t rawtime;
