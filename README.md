@@ -20,6 +20,9 @@ Francisco Lima: nº 61864, Márcio Caetano nº 61799
 - **`make prof`**
   Executa a versão fornecida pelos professores.
 
+- **`make val`**
+  Executa o program com valgrind
+
 ### **Dúvidas**
 
 1. **Função `end_execution(struct info_container *info, struct buffers *buffs)`**: O parâmetro `buffs` é explicitamente ignorado, pois não está a ser utilizado na função.
