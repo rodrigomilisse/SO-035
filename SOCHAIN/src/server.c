@@ -68,7 +68,7 @@ int execute_server(int server_id, struct info_container *info, struct buffers *b
 		if (tx.server_signature != -1)
 		{
 			printf("[Server %d] Li a transação %d do buffer e esta foi processada corretamente!\n"
-				   // ledger redirecionado para logg.txt
+				   // ledger redirecionado para log.txt
 				   // "[Server %d] ledger <- [tx.id %d, src_id %d, dest_id %d, amount %0.2f]\n\n",
 				   ,
 				   server_id, tx.id);

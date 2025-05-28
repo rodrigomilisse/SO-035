@@ -5,13 +5,14 @@
 #include "synchronization.h"
 #include "synchronization-private.h"
 #include "memory.h"
-#include <semaphore.h> //sem_t
-#include <fcntl.h>	   /* For O_* constants */
-#include <sys/stat.h>  /* For mode constants */
+#include <semaphore.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
 /* Função que cria *um* semaforo , inicializado a <value> */
 sem_t *create_semaphore(char *name, unsigned v)
 {
+	// fprintf(stderr, "[Debug] A abrir semáforo %s\n", name);
 	sem_unlink(name);
 	return sem_open(name, O_CREAT | O_EXCL, 0644, v);
 }
@@ -19,6 +20,7 @@ sem_t *create_semaphore(char *name, unsigned v)
 /* Função para desligar/destruir um semaforo , em funcão do seu nome e pointer */
 void destroy_semaphore(char *name, sem_t *sem)
 {
+	// fprintf(stderr, "[Debug] A fechar semáforo %s\n", name);
 	sem_close(sem);
 	sem_unlink(name);
 }
@@ -75,6 +77,8 @@ void destroy_semaphores(struct semaphores *sems)
 	destroy_shared_memory(SERVER_MAIN_SEM_NAME MUTEX_SUFFIX SEMS_NAME, sems->server_main, sizeof(sems->server_main));
 
 	destroy_semaphore(TERMINATE_MUTEX_SEM_NAME, sems->terminate_mutex);
+
+	destroy_shared_memory(SEMS_NAME, sems, sizeof(struct semaphores));
 }
 
 /* função genérica que cria 3 semaforos usados na lógica Produtor-Consumidor

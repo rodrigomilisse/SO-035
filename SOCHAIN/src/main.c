@@ -245,7 +245,7 @@ void write_final_statistics(struct info_container *info)
  */
 void end_execution(struct info_container *info, struct buffers *buffs)
 {
-	// printf("[Debug] A terminar a execução do SOchain!\n");
+	// fprintf(stderr, "[Debug] A terminar a execução do SOchain!\n");
 	sem_wait(info->sems->terminate_mutex);
 	*info->terminate = 1;
 	sem_post(info->sems->terminate_mutex);
@@ -277,7 +277,7 @@ void wait_processes(struct info_container *info)
 void print_balance(struct info_container *info)
 {
 	int id;
-	if (!safe_scanf(info, (struct buffers *)NULL, "%d", &id)) // TODO
+	if (!safe_scanf(info, (struct buffers *)NULL, "%d", &id))
 	{
 		return;
 	}
@@ -405,24 +405,24 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 void print_stat(int tx_counter, struct info_container *info)
 {
 	printf("- Configuração inicial:\n"
-				 "        Propriedade     Valor\n"
-				 "        init_balance    %0.2f\n"
-				 "        n_wallets       %d\n"
-				 "        n_servers       %d\n"
-				 "        buffers_size:   %d\n"
-				 "        max_txs         %d\n"
-				 "- Variáveis atuais:\n"
-				 "        terminate       %d\n"
-				 "        tx_count:       %d\n"
-				 "- Informação sobre as carteiras:\n"
-				 "        Carteira        PID             Saldo           Transações Assinadas\n",
-				 info->init_balance,
-				 info->n_wallets,
-				 info->n_servers,
-				 info->buffers_size,
-				 info->max_txs,
-				 read_terminate(info),
-				 tx_counter);
+		   "        Propriedade     Valor\n"
+		   "        init_balance    %0.2f\n"
+		   "        n_wallets       %d\n"
+		   "        n_servers       %d\n"
+		   "        buffers_size:   %d\n"
+		   "        max_txs         %d\n"
+		   "- Variáveis atuais:\n"
+		   "        terminate       %d\n"
+		   "        tx_count:       %d\n"
+		   "- Informação sobre as carteiras:\n"
+		   "        Carteira        PID             Saldo           Transações Assinadas\n",
+		   info->init_balance,
+		   info->n_wallets,
+		   info->n_servers,
+		   info->buffers_size,
+		   info->max_txs,
+		   read_terminate(info),
+		   tx_counter);
 	log_format("stat");
 
 	char SOT_str[64];
@@ -488,7 +488,7 @@ int main(int argc, char *argv[])
  */
 void wake_up_processes(struct info_container *info)
 {
-	// printf("dumping\n");
+	// fprintf(stderr, "[Debug] Dumping\n");
 	for (int i = 0; i < info->n_wallets; i++)
 	{
 		sem_post(info->sems->main_wallet->unread);

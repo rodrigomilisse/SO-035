@@ -15,7 +15,7 @@
  */
 void write_stats(struct info_container *info, struct buffers *buffs)
 {
-	// printf("Writing stats...\n");
+	// fprintf(stderr, "[Debug]Writing stats...\n");
 	FILE *fp;
 	fp = fopen(get_settings().stats_file, "w");
 	if (fp == NULL)
@@ -73,5 +73,5 @@ void write_stats(struct info_container *info, struct buffers *buffs)
 	}
 	fprintf(fp, "] SOT\n");
 
-	// printf("Stats written to file.\n");
+	// fprintf(STDERR_FILENO, "[Debug] Stats written to file.\n");
 }

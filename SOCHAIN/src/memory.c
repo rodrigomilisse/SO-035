@@ -30,6 +30,7 @@ void *allocate_dynamic_memory(int size)
  */
 void *create_shared_memory(char *name, int size)
 {
+	// fprintf(stderr, "[Debug] A alocar %d bytes shm para %s\n", size, name);
 	char full_name[256];
 	sprintf(full_name, "/%s%d", name, getuid());
 
@@ -69,6 +70,7 @@ void deallocate_dynamic_memory(void *ptr)
  */
 void destroy_shared_memory(char *name, void *ptr, int size)
 {
+	// fprintf(stderr, "[Debug] A libertar %d bytes shm para %s\n", size, name);
 	munmap(ptr, size);
 	unlink(name);
 }

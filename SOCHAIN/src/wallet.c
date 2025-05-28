@@ -38,12 +38,11 @@ int execute_wallet(int wallet_id, struct info_container *info, struct buffers *b
 		wallet_receive_transaction(&tx, wallet_id, info, buffs);
 
 		sem_post(info->sems->main_wallet->mutex);
-		sem_post(info->sems->main_wallet->free_space);
+		sem_post(tx.id == -1 ? info->sems->main_wallet->unread : info->sems->main_wallet->free_space);
 
 		// PROCESS
 		if (tx.id == -1)
 		{
-			sem_post(info->sems->main_wallet->unread);
 			nanosleep(&ts, NULL);
 			continue;
 		}

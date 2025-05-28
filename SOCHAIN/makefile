@@ -9,21 +9,21 @@ OBJ_PATHS = $(addprefix $(OBJ_DIR)/,$(OBJ_FILES))
 INC_DIR = inc
 SRC_DIR = src
 OBJ_DIR = obj
+BIN_DIR = bin
 FLAGS = -Wall -Wextra -Wno-unused-parameter -I$(INC_DIR)
 FLAGS_ENTREGA = -Wall -Wextra -Werror -I$(INC_DIR)
 LIBS = -lm
 CC = gcc
-PROGRAM_NAME = SOchain
-OUTPUT_DIR = bin
+PROGRAM = $(BIN_DIR)/SOchain
 DEFAULT_ARGS_FILE = args.txt
-DEFAULT_ARGS = "256.0\n2\n1\n64\n512\n"
+DEFAULT_ARGS = "256.0\n16\n4\n64\n512\n"
 DEFAULT_SETTINGS_FILE = settings.txt
 DEFAULT_LOG_FILE = log.txt
 DEFAULT_STATS_FILE = stats.txt
-DEFAULT_PERIOD = 10
+DEFAULT_PERIOD = 20
 DEFAULT_SETTINGS = "$(DEFAULT_LOG_FILE)\n$(DEFAULT_STATS_FILE)\n$(DEFAULT_PERIOD)"
 
-all: $(OUTPUT_DIR)/$(PROGRAM_NAME) $(DEFAULT_ARGS_FILE) $(DEFAULT_SETTINGS_FILE) $(DEFAULT_LOG_FILE) $(DEFAULT_STATS_FILE)
+all: $(PROGRAM) $(DEFAULT_ARGS_FILE) $(DEFAULT_SETTINGS_FILE) $(DEFAULT_LOG_FILE) $(DEFAULT_STATS_FILE)
 
 $(OUTPUT_DIR):
 >	mkdir -p $(OUTPUT_DIR)
@@ -44,14 +44,20 @@ $(DEFAULT_STATS_FILE):
 >	[ -f $(DEFAULT_STATS_FILE) ] || touch $(DEFAULT_STATS_FILE)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
->   $(CC) $(FLAGS) $(LIBS) -o $@ -c $^
+>   $(CC) $(FLAGS) -o $@ -c $^
 
-$(OUTPUT_DIR)/$(PROGRAM_NAME): $(OBJ_PATHS) | $(OUTPUT_DIR)
->   $(CC) $(OBJ_PATHS) -o $(OUTPUT_DIR)/$(PROGRAM_NAME)
+$(PROGRAM): $(OBJ_PATHS) | $(OUTPUT_DIR)
+>   $(CC) $(OBJ_PATHS) $(LIBS) -o $(PROGRAM)
 
 clean:
 >   rm -f $(OBJ_DIR)/*.o
->   rm -f $(OUTPUT_DIR)/$(PROGRAM_NAME)
+>   rm -f $(PROGRAM)
+
+fclean: clean
+> rm -f $(DEFAULT_ARGS_FILE)
+> rm -f $(DEFAULT_SETTINGS)
+> rm -f $(DEFAULT_LOG_FILE)
+> rm -f $(DEFAULT_STATS_FILE)
 
 re:
 >	clear
@@ -59,10 +65,13 @@ re:
 >	make all
 
 run: all
->	./$(OUTPUT_DIR)/$(PROGRAM_NAME) $(DEFAULT_ARGS_FILE) $(DEFAULT_SETTINGS_FILE)
+>	./$(PROGRAM) $(DEFAULT_ARGS_FILE) $(DEFAULT_SETTINGS_FILE)
 
 prof:
->		./$(OUTPUT_DIR)/SOchain_profs 10 2 1 8 3
+>		./$(bin_DIR)/SOchain_profs 256.0 16 4 64 512
 
-.PHONY: all clean re run prof
+val: re
+>	valgrind --leak-check=full -s ./$(PROGRAM) $(DEFAULT_ARGS_FILE) $(DEFAULT_SETTINGS_FILE)
+
+.PHONY: all clean re run prof val fclean
 

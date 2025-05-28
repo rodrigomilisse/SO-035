@@ -19,7 +19,7 @@ struct timestamps
  */
 char *get_timestamp();
 
-#define ALGUNS_MILISSEGUNDOS (long)3 * 1000000
+#define ALGUNS_MILISSEGUNDOS (long)20 * 1000000
 extern const struct timespec ts;
 
 #endif

@@ -14,7 +14,7 @@ static struct settings settings;
  */
 int init_settings(char *filename)
 {
-	// printf("Initializing settings... %s\n", filename);
+	// fprintf(stderr, "[Debug] Initializing settings... %s\n", filename);
 	FILE *file = fopen(filename, "r");
 	if (file == NULL)
 	{
@@ -29,7 +29,7 @@ int init_settings(char *filename)
 		return 1;
 	}
 	fclose(file);
-	// printf("Settings initialized.\n");
+	// fprintf(stderr, "[Debug] Settings initialized.\n");
 	return 0;
 }
 
