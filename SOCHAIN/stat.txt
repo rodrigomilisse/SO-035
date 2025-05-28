@@ -1,0 +1,13 @@
+Process Statistics:
+Main has PID: [7042]
+There were 3 Wallets, PIDs: [7043, 7044, 7045]
+There were 3 Servers, PIDs: [7046, 7047, 7048]
+Main received 1 transaction(s)!
+Wallet 0 signed 1 transaction(s)!
+Wallet 1 signed 0 transaction(s)!
+Wallet 2 signed 0 transaction(s)!
+Server 0 processed 1 transaction(s)!
+Server 1 processed 0 transaction(s)!
+Server 2 processed 0 transaction(s)!
+Main read 0 receipts.
+Final Balances [90.00, 110.00, 100.00] SOT

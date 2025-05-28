@@ -299,7 +299,7 @@ void print_balance(struct info_container *info)
  */
 void create_transaction(int *tx_counter, struct info_container *info, struct buffers *buffs)
 {
-	if (info->max_txs == *tx_counter + 1)
+	if (info->max_txs == *tx_counter)
 	{
 		if (!safe_scanf(info, buffs, "%d %d %f", &(int){0}, &(int){0}, &(float){0}))
 		{
@@ -382,12 +382,12 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 	read_servers_main_buffer(buffs->buff_servers_main, id, info->buffers_size, &tx);
 
 	sem_post(info->sems->server_main->mutex);
-	sem_post(info->sems->server_main->free_space);
+	sem_post(tx.id == -1 ? info->sems->server_main->unread : info->sems->server_main->free_space);
 
 	// PRINT
 	if (tx.id == -1)
 	{
-		printf("[Main] O comprovativo da execução da transação %d não está disponível.\n\n", tx.id);
+		printf("[Main] O comprovativo da execução da transação %d não está disponível.\n\n", id);
 	}
 	else
 	{
@@ -405,25 +405,25 @@ void receive_receipt(struct info_container *info, struct buffers *buffs)
 void print_stat(int tx_counter, struct info_container *info)
 {
 	printf("- Configuração inicial:\n"
-		   "        Propriedade     Valor\n"
-		   "        init_balance    %0.2f\n"
-		   "        n_wallets       %d\n"
-		   "        n_servers       %d\n"
-		   "        buffers_size:   %d\n"
-		   "        max_txs         %d\n"
-		   "- Variáveis atuais:\n"
-		   "        terminate       %d\n"
-		   "        tx_count:       %d\n"
-		   "- Informação sobre as carteiras:\n"
-		   "        Carteira        PID             Saldo           Transações Assinadas\n",
-		   info->init_balance,
-		   info->n_wallets,
-		   info->n_servers,
-		   info->buffers_size,
-		   info->max_txs,
-		   read_terminate(info),
-		   tx_counter);
-	log_format("stat %d", tx_counter);
+				 "        Propriedade     Valor\n"
+				 "        init_balance    %0.2f\n"
+				 "        n_wallets       %d\n"
+				 "        n_servers       %d\n"
+				 "        buffers_size:   %d\n"
+				 "        max_txs         %d\n"
+				 "- Variáveis atuais:\n"
+				 "        terminate       %d\n"
+				 "        tx_count:       %d\n"
+				 "- Informação sobre as carteiras:\n"
+				 "        Carteira        PID             Saldo           Transações Assinadas\n",
+				 info->init_balance,
+				 info->n_wallets,
+				 info->n_servers,
+				 info->buffers_size,
+				 info->max_txs,
+				 read_terminate(info),
+				 tx_counter);
+	log_format("stat");
 
 	char SOT_str[64];
 
