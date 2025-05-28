@@ -84,11 +84,12 @@ Retorna: um pointer para a estrutura que contem 3 semaforos. */
 struct triplet_sems *create_triplet_sems(
 	unsigned v, char *freespace_name1, char *unread_name, char *mutex_name)
 {
-	char *name = malloc(strlen(mutex_name) + strlen(SEMS_NAME));
+	char *name = allocate_dynamic_memory(strlen(mutex_name) + strlen(SEMS_NAME) + 1);
 	strcat(name, mutex_name);
 	strcat(name, SEMS_NAME);
 
 	struct triplet_sems *trip_sems = create_shared_memory(name, sizeof(struct triplet_sems));
+	deallocate_dynamic_memory(name);
 
 	trip_sems->unread = create_semaphore(unread_name, 0);
 	trip_sems->free_space = create_semaphore(freespace_name1, v);

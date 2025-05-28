@@ -484,7 +484,7 @@ int main(int argc, char *argv[])
 }
 
 /*
-Acorda todos os processos filhos (que estejam a dormirem sem_wait), de forma a estes poderem terminar.
+ *Acorda todos os processos filhos (que estejam a dormirem sem_wait), de forma a estes poderem terminar.
  */
 void wake_up_processes(struct info_container *info)
 {
