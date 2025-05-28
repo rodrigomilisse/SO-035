@@ -55,7 +55,7 @@ clean:
 
 fclean: clean
 > rm -f $(DEFAULT_ARGS_FILE)
-> rm -f $(DEFAULT_SETTINGS)
+> rm -f $(DEFAULT_SETTINGS_FILE)
 > rm -f $(DEFAULT_LOG_FILE)
 > rm -f $(DEFAULT_STATS_FILE)
 
